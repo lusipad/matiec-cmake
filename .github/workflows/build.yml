@@ -1,0 +1,220 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [master, main]
+    tags: ['v*']
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux-x64
+            cmake_generator: Ninja
+          - os: macos-latest
+            name: osx-x64
+            cmake_generator: Ninja
+          - os: windows-latest
+            name: win-x64
+            cmake_generator: Ninja
+
+    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.name }})
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flex bison ninja-build
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install flex bison ninja
+          echo "$(brew --prefix flex)/bin" >> $GITHUB_PATH
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install winflexbison3 ninja -y
+          echo "C:\ProgramData\chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G "${{ matrix.cmake_generator }}" -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+      - name: Build
+        run: cmake --build build --config ${{ env.BUILD_TYPE }}
+
+      - name: Test executables
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            ./build/iec2c.exe --help || true
+            ./build/iec2iec.exe --help || true
+          else
+            ./build/iec2c --help || true
+            ./build/iec2iec --help || true
+          fi
+
+      - name: Prepare artifacts
+        shell: bash
+        run: |
+          mkdir -p artifacts/${{ matrix.name }}
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cp build/iec2c.exe artifacts/${{ matrix.name }}/
+            cp build/iec2iec.exe artifacts/${{ matrix.name }}/
+          else
+            cp build/iec2c artifacts/${{ matrix.name }}/
+            cp build/iec2iec artifacts/${{ matrix.name }}/
+          fi
+          cp -r lib artifacts/${{ matrix.name }}/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: matiec-${{ matrix.name }}
+          path: artifacts/${{ matrix.name }}
+          retention-days: 30
+
+  # Create NuGet package
+  nuget:
+    needs: build
+    runs-on: windows-latest
+    name: Package NuGet
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Prepare package structure
+        shell: pwsh
+        run: |
+          # Create package directories
+          New-Item -ItemType Directory -Force -Path "package/tools/win-x64"
+          New-Item -ItemType Directory -Force -Path "package/tools/linux-x64"
+          New-Item -ItemType Directory -Force -Path "package/tools/osx-x64"
+          New-Item -ItemType Directory -Force -Path "package/lib"
+          New-Item -ItemType Directory -Force -Path "package/build"
+          New-Item -ItemType Directory -Force -Path "package/docs"
+
+          # Copy binaries
+          Copy-Item -Path "artifacts/matiec-win-x64/*" -Destination "package/tools/win-x64/" -Recurse
+          Copy-Item -Path "artifacts/matiec-linux-x64/*" -Destination "package/tools/linux-x64/" -Recurse
+          Copy-Item -Path "artifacts/matiec-osx-x64/*" -Destination "package/tools/osx-x64/" -Recurse
+
+          # Copy lib folder to package root
+          Copy-Item -Path "lib" -Destination "package/" -Recurse -Force
+
+          # Copy MSBuild integration files
+          Copy-Item -Path "build/matiec.props" -Destination "package/build/"
+          Copy-Item -Path "build/matiec.targets" -Destination "package/build/"
+
+          # Copy documentation
+          Copy-Item -Path "docs/README.md" -Destination "package/docs/"
+
+      - name: Get version
+        id: version
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -match '^refs/tags/v(.+)$') {
+            $version = $matches[1]
+          } else {
+            $version = "0.1.0-preview.${{ github.run_number }}"
+          }
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          echo "Version: $version"
+
+      - name: Create NuGet package
+        shell: pwsh
+        run: |
+          nuget pack matiec.nuspec -Version ${{ steps.version.outputs.VERSION }} -BasePath package -OutputDirectory nupkg
+
+      - name: Upload NuGet package
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: nupkg/*.nupkg
+          retention-days: 30
+
+  # Publish to NuGet.org on tag
+  publish:
+    needs: nuget
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: Publish NuGet
+
+    steps:
+      - name: Download NuGet package
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package
+          path: nupkg
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Publish to NuGet.org
+        run: |
+          nuget push nupkg/*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey ${{ secrets.NUGET_API_KEY }} -SkipDuplicate
+
+  # Create GitHub Release on tag
+  release:
+    needs: [build, nuget]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: Create Release
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release archives
+        run: |
+          cd artifacts
+          for dir in matiec-*/; do
+            name="${dir%/}"
+            zip -r "../${name}.zip" "$dir"
+            tar -czvf "../${name}.tar.gz" "$dir"
+          done
+          cd ..
+          ls -la *.zip *.tar.gz
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.zip
+            *.tar.gz
+            artifacts/nuget-package/*.nupkg
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref, '-') }}

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>matiec</id>
+    <version>$version$</version>
+    <title>matiec - IEC 61131-3 Compiler</title>
+    <authors>Mario de Sousa</authors>
+    <owners>PLCopen Community</owners>
+    <license type="expression">GPL-3.0-only</license>
+    <projectUrl>https://github.com/your-org/matiec</projectUrl>
+    <repository type="git" url="https://github.com/your-org/matiec.git" />
+    <description>
+matiec is an IEC 61131-3 compiler that translates IEC 61131-3 programming languages (ST, IL, SFC, etc.) to C code.
+
+Included tools:
+- iec2c: Compiles IEC 61131-3 source code to C
+- iec2iec: Normalizes IEC 61131-3 source code
+
+This package includes native binaries for:
+- Windows x64
+- Linux x64
+- macOS x64
+    </description>
+    <summary>IEC 61131-3 to C compiler for PLC programming</summary>
+    <releaseNotes>See https://github.com/your-org/matiec/releases</releaseNotes>
+    <copyright>Copyright (c) Mario de Sousa and contributors</copyright>
+    <tags>iec61131 plc compiler st il sfc ladder fbd automation</tags>
+    <readme>docs\README.md</readme>
+    <contentFiles>
+      <files include="**/*" buildAction="None" copyToOutput="true" />
+    </contentFiles>
+  </metadata>
+  <files>
+    <!-- Windows binaries -->
+    <file src="tools\win-x64\iec2c.exe" target="tools\win-x64\" />
+    <file src="tools\win-x64\iec2iec.exe" target="tools\win-x64\" />
+    <file src="tools\win-x64\lib\**\*" target="tools\win-x64\lib\" />
+
+    <!-- Linux binaries -->
+    <file src="tools\linux-x64\iec2c" target="tools\linux-x64\" />
+    <file src="tools\linux-x64\iec2iec" target="tools\linux-x64\" />
+    <file src="tools\linux-x64\lib\**\*" target="tools\linux-x64\lib\" />
+
+    <!-- macOS binaries -->
+    <file src="tools\osx-x64\iec2c" target="tools\osx-x64\" />
+    <file src="tools\osx-x64\iec2iec" target="tools\osx-x64\" />
+    <file src="tools\osx-x64\lib\**\*" target="tools\osx-x64\lib\" />
+
+    <!-- Standard library files -->
+    <file src="lib\**\*" target="lib\" />
+
+    <!-- MSBuild integration -->
+    <file src="build\matiec.props" target="build\" />
+    <file src="build\matiec.targets" target="build\" />
+
+    <!-- Documentation -->
+    <file src="docs\README.md" target="docs\" />
+  </files>
+</package>

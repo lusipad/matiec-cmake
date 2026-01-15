@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+    MSBuild targets for matiec IEC 61131-3 compiler integration.
+
+    Usage in your .csproj:
+    <ItemGroup>
+      <IecSource Include="plc\*.st" />
+    </ItemGroup>
+
+    <Target Name="CompileIec" BeforeTargets="Build">
+      <Iec2c Sources="@(IecSource)" OutputDir="$(IntermediateOutputPath)iec\" />
+    </Target>
+  -->
+
+  <UsingTask TaskName="Iec2c" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Sources ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <OutputDir ParameterType="System.String" Required="true" />
+      <IncludeDirs ParameterType="System.String" />
+      <AdditionalOptions ParameterType="System.String" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Diagnostics" />
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs">
+<![CDATA[
+string iec2c = "$(Iec2cExe)";
+string libDir = "$(MatiecLibDir)";
+
+Directory.CreateDirectory(OutputDir);
+
+foreach (var source in Sources)
+{
+    string sourcePath = source.GetMetadata("FullPath");
+    string includes = string.IsNullOrEmpty(IncludeDirs) ? libDir : IncludeDirs;
+
+    var psi = new ProcessStartInfo
+    {
+        FileName = iec2c,
+        Arguments = $"-I \"{includes}\" \"{sourcePath}\" -T \"{OutputDir}\" {AdditionalOptions}",
+        UseShellExecute = false,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        CreateNoWindow = true
+    };
+
+    Log.LogMessage(MessageImportance.High, $"Compiling IEC: {Path.GetFileName(sourcePath)}");
+
+    using (var process = Process.Start(psi))
+    {
+        string stdout = process.StandardOutput.ReadToEnd();
+        string stderr = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+
+        if (!string.IsNullOrEmpty(stdout))
+            Log.LogMessage(MessageImportance.Normal, stdout);
+
+        if (process.ExitCode != 0)
+        {
+            Log.LogError($"iec2c failed for {sourcePath}: {stderr}");
+            return false;
+        }
+    }
+}
+return true;
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+</Project>

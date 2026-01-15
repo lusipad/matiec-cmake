@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MatiecPackageRoot>$(MSBuildThisFileDirectory)..\</MatiecPackageRoot>
+
+    <!-- Platform-specific tool paths -->
+    <MatiecToolsDir Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(MatiecPackageRoot)tools\win-x64\</MatiecToolsDir>
+    <MatiecToolsDir Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(MatiecPackageRoot)tools/linux-x64/</MatiecToolsDir>
+    <MatiecToolsDir Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(MatiecPackageRoot)tools/osx-x64/</MatiecToolsDir>
+
+    <!-- Executables -->
+    <Iec2cExe Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(MatiecToolsDir)iec2c.exe</Iec2cExe>
+    <Iec2cExe Condition="!$([MSBuild]::IsOSPlatform('Windows'))">$(MatiecToolsDir)iec2c</Iec2cExe>
+
+    <Iec2iecExe Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(MatiecToolsDir)iec2iec.exe</Iec2iecExe>
+    <Iec2iecExe Condition="!$([MSBuild]::IsOSPlatform('Windows'))">$(MatiecToolsDir)iec2iec</Iec2iecExe>
+
+    <!-- Library path -->
+    <MatiecLibDir>$(MatiecPackageRoot)lib\</MatiecLibDir>
+  </PropertyGroup>
+</Project>
