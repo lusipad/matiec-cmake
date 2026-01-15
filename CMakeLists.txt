@@ -38,8 +38,10 @@ find_package(FLEX REQUIRED)
 
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # Clang (including clang-cl on Windows)
+    # Clang (including clang-cl on Windows and AppleClang on macOS)
     add_compile_options(-Wall -Wpointer-arith -Wwrite-strings -Wno-unused)
+    # Disable warnings that are errors in older code
+    add_compile_options(-Wno-overloaded-virtual -Wno-deprecated-register)
     if(WIN32)
         add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     endif()
