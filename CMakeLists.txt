@@ -42,6 +42,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall -Wpointer-arith -Wwrite-strings -Wno-unused)
     # Disable warnings that are errors in older code
     add_compile_options(-Wno-overloaded-virtual -Wno-deprecated-register)
+    # Disable C++11 literal suffix warning (code uses old-style PRId64 macros)
+    add_compile_options(-Wno-reserved-user-defined-literal)
     if(WIN32)
         add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     endif()
