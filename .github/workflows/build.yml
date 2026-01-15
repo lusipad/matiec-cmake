@@ -84,7 +84,6 @@ jobs:
             cp build/iec2c artifacts/${{ matrix.name }}/
             cp build/iec2iec artifacts/${{ matrix.name }}/
           fi
-          cp -r lib artifacts/${{ matrix.name }}/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -122,13 +121,16 @@ jobs:
           New-Item -ItemType Directory -Force -Path "package/build"
           New-Item -ItemType Directory -Force -Path "package/docs"
 
-          # Copy binaries
-          Copy-Item -Path "artifacts/matiec-win-x64/*" -Destination "package/tools/win-x64/" -Recurse
-          Copy-Item -Path "artifacts/matiec-linux-x64/*" -Destination "package/tools/linux-x64/" -Recurse
-          Copy-Item -Path "artifacts/matiec-osx-x64/*" -Destination "package/tools/osx-x64/" -Recurse
+          # Copy binaries only (no lib subdirectories)
+          Copy-Item -Path "artifacts/matiec-win-x64/iec2c.exe" -Destination "package/tools/win-x64/"
+          Copy-Item -Path "artifacts/matiec-win-x64/iec2iec.exe" -Destination "package/tools/win-x64/"
+          Copy-Item -Path "artifacts/matiec-linux-x64/iec2c" -Destination "package/tools/linux-x64/"
+          Copy-Item -Path "artifacts/matiec-linux-x64/iec2iec" -Destination "package/tools/linux-x64/"
+          Copy-Item -Path "artifacts/matiec-osx-x64/iec2c" -Destination "package/tools/osx-x64/"
+          Copy-Item -Path "artifacts/matiec-osx-x64/iec2iec" -Destination "package/tools/osx-x64/"
 
-          # Copy lib folder to package root
-          Copy-Item -Path "lib" -Destination "package/" -Recurse -Force
+          # Copy lib folder to package root (shared across platforms)
+          Copy-Item -Path "lib/*" -Destination "package/lib/" -Recurse
 
           # Copy MSBuild integration files
           Copy-Item -Path "build/matiec.props" -Destination "package/build/"

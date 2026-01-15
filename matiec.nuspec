@@ -34,19 +34,16 @@ This package includes native binaries for:
     <!-- Windows binaries -->
     <file src="tools\win-x64\iec2c.exe" target="tools\win-x64\" />
     <file src="tools\win-x64\iec2iec.exe" target="tools\win-x64\" />
-    <file src="tools\win-x64\lib\**\*" target="tools\win-x64\lib\" />
 
     <!-- Linux binaries -->
     <file src="tools\linux-x64\iec2c" target="tools\linux-x64\" />
     <file src="tools\linux-x64\iec2iec" target="tools\linux-x64\" />
-    <file src="tools\linux-x64\lib\**\*" target="tools\linux-x64\lib\" />
 
     <!-- macOS binaries -->
     <file src="tools\osx-x64\iec2c" target="tools\osx-x64\" />
     <file src="tools\osx-x64\iec2iec" target="tools\osx-x64\" />
-    <file src="tools\osx-x64\lib\**\*" target="tools\osx-x64\lib\" />
 
-    <!-- Standard library files -->
+    <!-- Standard library files (shared across platforms) -->
     <file src="lib\**\*" target="lib\" />
 
     <!-- MSBuild integration -->
