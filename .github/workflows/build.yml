@@ -94,8 +94,8 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            ./build/iec2c.exe -v || true
-            ./build/iec2iec.exe -v || true
+            ./build/Release/iec2c.exe -v || true
+            ./build/Release/iec2iec.exe -v || true
           else
             ./build/iec2c -v || true
             ./build/iec2iec -v || true
@@ -110,8 +110,8 @@ jobs:
 
           # Copy executables
           if [ "$RUNNER_OS" == "Windows" ]; then
-            cp build/iec2c.exe "$DIST_DIR/bin/"
-            cp build/iec2iec.exe "$DIST_DIR/bin/"
+            cp build/Release/iec2c.exe "$DIST_DIR/bin/"
+            cp build/Release/iec2iec.exe "$DIST_DIR/bin/"
           else
             cp build/iec2c "$DIST_DIR/bin/"
             cp build/iec2iec "$DIST_DIR/bin/"
