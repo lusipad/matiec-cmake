@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MatiecToolsDir>$(MSBuildThisFileDirectory)..\tools\</MatiecToolsDir>
+    <MatiecLibDir>$(MSBuildThisFileDirectory)..\lib\</MatiecLibDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Platform)' == 'x64' And '$([MSBuild]::IsOSPlatform(Windows))' == 'true'">
+    <MatiecExe>$(MatiecToolsDir)win-x64\iec2c.exe</MatiecExe>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$([MSBuild]::IsOSPlatform(Linux))' == 'true'">
+    <MatiecExe>$(MatiecToolsDir)linux-x64/iec2c</MatiecExe>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
+    <MatiecExe>$(MatiecToolsDir)osx-x64/iec2c</MatiecExe>
+  </PropertyGroup>
+</Project>

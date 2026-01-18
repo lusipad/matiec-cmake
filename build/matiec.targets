@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="CompileIEC" BeforeTargets="Build">
+    <Message Text="matiec: Use $(MatiecExe) to compile IEC 61131-3 files" Importance="high" />
+  </Target>
+</Project>
