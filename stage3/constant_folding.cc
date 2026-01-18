@@ -186,16 +186,16 @@
 
 
 
-#define SET_CVALUE(dtype, symbol, new_value)  ((symbol)->const_value._##dtype.set(new_value))
-#define GET_CVALUE(dtype, symbol)             ((symbol)->const_value._##dtype.get())
-#define SET_OVFLOW(dtype, symbol)             ((symbol)->const_value._##dtype.set_overflow())
-#define SET_NONCONST(dtype, symbol)           ((symbol)->const_value._##dtype.set_nonconst())
+#define SET_CVALUE(dtype, symbol, new_value)  ((symbol)->const_value.m_##dtype.set(new_value))
+#define GET_CVALUE(dtype, symbol)             ((symbol)->const_value.m_##dtype.get())
+#define SET_OVFLOW(dtype, symbol)             ((symbol)->const_value.m_##dtype.set_overflow())
+#define SET_NONCONST(dtype, symbol)           ((symbol)->const_value.m_##dtype.set_nonconst())
 
-#define VALID_CVALUE(dtype, symbol)           ((symbol)->const_value._##dtype.is_valid())
-#define IS_OVFLOW(dtype, symbol)              ((symbol)->const_value._##dtype.is_overflow())
-#define IS_NONCONST(dtype, symbol)            ((symbol)->const_value._##dtype.is_nonconst())
-#define IS_UNDEFINED(dtype, symbol)           ((symbol)->const_value._##dtype.is_undefined())
-#define ISZERO_CVALUE(dtype, symbol)          ((symbol)->const_value._##dtype.is_zero())
+#define VALID_CVALUE(dtype, symbol)           ((symbol)->const_value.m_##dtype.is_valid())
+#define IS_OVFLOW(dtype, symbol)              ((symbol)->const_value.m_##dtype.is_overflow())
+#define IS_NONCONST(dtype, symbol)            ((symbol)->const_value.m_##dtype.is_nonconst())
+#define IS_UNDEFINED(dtype, symbol)           ((symbol)->const_value.m_##dtype.is_undefined())
+#define ISZERO_CVALUE(dtype, symbol)          ((symbol)->const_value.m_##dtype.is_zero())
 
 
 #define ISEQUAL_CVALUE(dtype, symbol1, symbol2) \
@@ -227,12 +227,12 @@
  * - constant * constant = non_const (if not equal)
  */
 #define COMPUTE_MEET_SEMILATTICE(dtype, c1, c2, resValue) {\
-		if (( c1._##dtype.get()  != c2._##dtype.get() && c2._##dtype.is_valid() && c1._##dtype.is_valid()) ||\
-		    ( c1._##dtype.is_nonconst() && c2._##dtype.is_valid() ) ||\
-		    ( c2._##dtype.is_nonconst() && c1._##dtype.is_valid() )) {\
-			resValue._##dtype.set_nonconst();\
+		if (( c1.m_##dtype.get()  != c2.m_##dtype.get() && c2.m_##dtype.is_valid() && c1.m_##dtype.is_valid()) ||\
+		    ( c1.m_##dtype.is_nonconst() && c2.m_##dtype.is_valid() ) ||\
+		    ( c2.m_##dtype.is_nonconst() && c1.m_##dtype.is_valid() )) {\
+			resValue.m_##dtype.set_nonconst();\
 		} else {\
-			resValue._##dtype.set(c1._##dtype.get());\
+			resValue.m_##dtype.set(c1.m_##dtype.get());\
 		}\
 }
 
@@ -376,13 +376,13 @@ real64_t extract_real_value(symbol_c *sym, bool *overflow) {
   else ERROR;
     
   errno = 0; // since strtoXX() may legally return 0, we must set errno to 0 to detect errors correctly!
-  #if    (real64_tX  == float)
+  #if    (real64_tX  == REAL_TYPE_FLOAT)
     ret = strtof(str.c_str(),  &endptr);
-  #elif  (real64_tX  == double)
+  #elif  (real64_tX  == REAL_TYPE_DOUBLE)
     ret = strtod(str.c_str(),  &endptr);
-  #elif  (real64_tX  == long_double)
+  #elif  (real64_tX  == REAL_TYPE_LONG_DOUBLE)
     ret = strtold(str.c_str(), &endptr);
-  #else 
+  #else
     #error Could not determine which data type is being used for real64_t (defined in main.hh). Aborting!
   #endif
   if (overflow != NULL)
@@ -741,7 +741,7 @@ static void *handle_pow(symbol_c *symbol, symbol_c *oper1, symbol_c *oper2) {
 
 /* If the cvalues of all the prev_il_intructions have the same VALID value, then set the local cvalue to that value, otherwise, set it to NONCONST! */
 #define intersect_prev_CVALUE_(dtype, symbol) {                                                                   \
-	symbol->const_value._##dtype = symbol->prev_il_instruction[0]->const_value._##dtype;                      \
+	symbol->const_value.m_##dtype = symbol->prev_il_instruction[0]->const_value.m_##dtype;                      \
 	for (unsigned int i = 1; i < symbol->prev_il_instruction.size(); i++) {                                   \
 		if (!ISEQUAL_CVALUE(dtype, symbol, symbol->prev_il_instruction[i]))                               \
 			{SET_NONCONST(dtype, symbol); break;}                                                     \
@@ -2041,7 +2041,7 @@ void *constant_propagation_c::visit(for_statement_c *symbol) {
 	values_incoming = values; /* save incoming status */
 	symbol->beg_expression->accept(*this);
 	symbol->end_expression->accept(*this);
-	(*values)[get_var_name_c::get_name(symbol->control_variable)->value]._int64.status = const_value_c::cs_non_const;
+	(*values)[get_var_name_c::get_name(symbol->control_variable)->value].m_int64.status = const_value_c::cs_non_const;
 
 	/* Optimize dead code */
 	if (NULL != symbol->by_expression) {

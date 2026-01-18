@@ -71,8 +71,8 @@
 }
 
 
-#define GET_CVALUE(dtype, symbol)             ((symbol)->const_value._##dtype.get())
-#define VALID_CVALUE(dtype, symbol)           ((symbol)->const_value._##dtype.is_valid())
+#define GET_CVALUE(dtype, symbol)             ((symbol)->const_value.m_##dtype.get())
+#define VALID_CVALUE(dtype, symbol)           ((symbol)->const_value.m_##dtype.is_valid())
 
 
 

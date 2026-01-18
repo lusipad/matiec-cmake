@@ -59,7 +59,11 @@
 #include <list>
 #include <string>
 #include <string.h>
+#ifdef _WIN32
+#include <string.h>
+#else
 #include <strings.h>
+#endif
 
 
 /* set to 1 to see debug info during execution */

@@ -68,7 +68,7 @@
 
 
 #include <stdio.h>
-#include <getopt.h>
+#include "util/getopt_compat.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>

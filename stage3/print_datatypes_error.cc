@@ -50,7 +50,11 @@
 #include <list>
 #include <string>
 #include <string.h>
+#ifdef _WIN32
+#include <string.h>
+#else
 #include <strings.h>
+#endif
 
 
 

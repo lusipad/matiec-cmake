@@ -29,7 +29,11 @@
 #include <list>
 #include <map>
 #include <sstream>
+#ifdef _WIN32
+#include <string.h>
+#else
 #include <strings.h>
+#endif
 
 
 #include "../../util/symtable.hh"
@@ -53,8 +57,8 @@
 
 
 /* Macros to access the constant value of each expression (if it exists) from the annotation introduced to the symbol_c object by constant_folding_c in stage3! */
-#define VALID_CVALUE(dtype, symbol)           ((symbol)->const_value._##dtype.is_valid())
-#define GET_CVALUE(dtype, symbol)             ((symbol)->const_value._##dtype.get()) 
+#define VALID_CVALUE(dtype, symbol)           ((symbol)->const_value.m_##dtype.is_valid())
+#define GET_CVALUE(dtype, symbol)             ((symbol)->const_value.m_##dtype.get()) 
 
 
 
@@ -219,10 +223,10 @@ void stage4_print_options(void) {
   printf("      b : generate functions to backup and restore internal PLC state.\n"); 
 }
 #else /* not __unix__ */
-/* getsubopt isn't supported with mingw, 
+/* getsubopt isn't supported with mingw,
  *  then stage4 options aren't available on windows*/
 void stage4_print_options(void) {}
-int  stage4_parse_options(char *options) {}
+int  stage4_parse_options(char *options) { return 0; }
 #endif 
 
 /***********************************************************************/

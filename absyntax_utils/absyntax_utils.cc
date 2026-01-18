@@ -49,7 +49,11 @@
 #include <sstream>
 #include <typeinfo>
 #include <list>
+#ifdef _WIN32
+#include <string.h>
+#else
 #include <strings.h>
+#endif
 // #include <string.h>  /* required for strlen() */
 // #include <stdlib.h>  /* required for atoi() */
 // #include <errno.h>   /* required for errno */

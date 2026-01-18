@@ -101,7 +101,18 @@ extern void error_exit(const char *file_name, int line_no, const char *errmsg = 
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS /* required to have UINTxx_MAX defined when including stdint.h from C++ source code. */
 #endif
-#include <stdint.h>         
+#include <stdint.h>
+
+/* Windows compatibility for strcasecmp */
+#ifdef _WIN32
+  #include <string.h>
+  #ifndef strcasecmp
+    #define strcasecmp _stricmp
+  #endif
+  #ifndef strncasecmp
+    #define strncasecmp _strnicmp
+  #endif
+#endif         
 #include <limits>
 
 #ifndef   UINT64_MAX 
@@ -126,37 +137,42 @@ extern void error_exit(const char *file_name, int line_no, const char *errmsg = 
  *  e.g.:  static_assert(offsetof(struct header_t, c) == 8, "Compile time error message.");
  */
 
+/* Numeric constants for preprocessor comparisons (MSVC compatible) */
+#define REAL_TYPE_FLOAT       1
+#define REAL_TYPE_DOUBLE      2
+#define REAL_TYPE_LONG_DOUBLE 3
+
 #include <float.h>
 #if    (LDBL_MANT_DIG == 53) /* NOTE: 64 bit IEC559 real has 53 bits for mantissa! */
-  #define real64_tX long_double /* so we can later use #if (real64_t == long_double) directives in the code! */
+  #define real64_tX REAL_TYPE_LONG_DOUBLE /* numeric constant for preprocessor comparisons */
   #define real64_t  long double /* NOTE: no underscore '_' between 'long' and 'double' */
   #define REAL64_MAX  LDBL_MAX
 #elif  ( DBL_MANT_DIG == 53) /* NOTE: 64 bit IEC559 real has 53 bits for mantissa! */
-  #define real64_tX double
+  #define real64_tX REAL_TYPE_DOUBLE
   #define real64_t  double
   #define REAL64_MAX  DBL_MAX
 #elif  ( FLT_MANT_DIG == 53) /* NOTE: 64 bit IEC559 real has 53 bits for mantissa! */
-  #define real64_tX float
+  #define real64_tX REAL_TYPE_FLOAT
   #define real64_t  float
   #define REAL64_MAX  FLT_MAX
-#else 
+#else
   #error Could not find a 64 bit floating point data type on this platform. Aborting...
 #endif
 
 
 #if    (LDBL_MANT_DIG == 24) /* NOTE: 32 bit IEC559 real has 24 bits for mantissa! */
-  #define real32_tX long_double /* so we can later use #if (real32_t == long_double) directives in the code! */
+  #define real32_tX REAL_TYPE_LONG_DOUBLE /* numeric constant for preprocessor comparisons */
   #define real32_t  long double /* NOTE: no underscore '_' between 'long' and 'double' */
   #define REAL32_MAX  LDBL_MAX
 #elif  ( DBL_MANT_DIG == 24) /* NOTE: 32 bit IEC559 real has 24 bits for mantissa! */
-  #define real32_tX double
+  #define real32_tX REAL_TYPE_DOUBLE
   #define real32_t  double
   #define REAL32_MAX  DBL_MAX
 #elif  ( FLT_MANT_DIG == 24) /* NOTE: 32 bit IEC559 real has 24 bits for mantissa! */
-  #define real32_tX float
+  #define real32_tX REAL_TYPE_FLOAT
   #define real32_t  float
   #define REAL32_MAX  FLT_MAX
-#else 
+#else
   #error Could not find a 32 bit floating point data type on this platform. Aborting...
 #endif
 

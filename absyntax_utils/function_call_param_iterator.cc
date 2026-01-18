@@ -47,7 +47,11 @@
 
 
 #include "function_call_param_iterator.hh"
+#ifdef _WIN32
+#include <string.h>
+#else
 #include <strings.h>
+#endif
 #include "../main.hh" // required for ERROR() and ERROR_MSG() macros.
 
 

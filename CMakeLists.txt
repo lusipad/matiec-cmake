@@ -160,6 +160,11 @@ set(MATIEC_LIB_SOURCES
     main.cc
 )
 
+# Add Windows-specific source files
+if(WIN32)
+    list(APPEND MATIEC_LIB_SOURCES util/getopt_compat.c)
+endif()
+
 # Static library
 if(MATIEC_BUILD_STATIC)
     add_library(matiec_static STATIC ${MATIEC_LIB_SOURCES})
@@ -216,8 +221,14 @@ endif()
 # ==============================================================================
 
 if(MATIEC_BUILD_TOOLS)
+    # Tool sources
+    set(TOOL_SOURCES main.cc)
+    if(WIN32)
+        list(APPEND TOOL_SOURCES util/getopt_compat.c)
+    endif()
+
     # Executable: iec2c (IEC 61131-3 to C)
-    add_executable(iec2c main.cc)
+    add_executable(iec2c ${TOOL_SOURCES})
     target_include_directories(iec2c PRIVATE ${CMAKE_SOURCE_DIR})
     target_link_libraries(iec2c PRIVATE
         stage1_2
@@ -228,7 +239,7 @@ if(MATIEC_BUILD_TOOLS)
     )
 
     # Executable: iec2iec (IEC 61131-3 normalizer)
-    add_executable(iec2iec main.cc)
+    add_executable(iec2iec ${TOOL_SOURCES})
     target_include_directories(iec2iec PRIVATE ${CMAKE_SOURCE_DIR})
     target_link_libraries(iec2iec PRIVATE
         stage1_2
@@ -277,7 +288,6 @@ if(MATIEC_INSTALL)
 
     if(INSTALL_TARGETS)
         install(TARGETS ${INSTALL_TARGETS}
-            EXPORT matiecTargets
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -295,33 +305,6 @@ if(MATIEC_INSTALL)
         FILES_MATCHING
         PATTERN "*.txt"
         PATTERN "*.h"
-    )
-
-    # Install CMake config files
-    install(EXPORT matiecTargets
-        FILE matiecTargets.cmake
-        NAMESPACE matiec::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/matiec
-    )
-
-    # Generate and install config file
-    configure_package_config_file(
-        ${CMAKE_SOURCE_DIR}/cmake/matiecConfig.cmake.in
-        ${CMAKE_BINARY_DIR}/matiecConfig.cmake
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/matiec
-    )
-
-    # Generate and install version file
-    write_basic_package_version_file(
-        ${CMAKE_BINARY_DIR}/matiecConfigVersion.cmake
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY SameMajorVersion
-    )
-
-    install(FILES
-        ${CMAKE_BINARY_DIR}/matiecConfig.cmake
-        ${CMAKE_BINARY_DIR}/matiecConfigVersion.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/matiec
     )
 endif()
 

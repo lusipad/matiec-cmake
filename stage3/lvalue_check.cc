@@ -85,7 +85,11 @@ int lvalue_check_c::get_error_count() {
 }
 
 
+#ifdef _WIN32
+#include <string.h>
+#else
 #include <strings.h>
+#endif
 /* No writing to iterator variables (used in FOR loops) inside the loop itself */
 void lvalue_check_c::check_assignment_to_controlvar(symbol_c *lvalue) {
 	for (unsigned int i = 0; i < control_variables.size(); i++) {

@@ -30,6 +30,11 @@ target_compile_definitions(stage1_2 PRIVATE
     YY_BUF_SIZE=65536
 )
 
+# Windows: disable unistd.h in flex-generated code
+if(WIN32)
+    target_compile_definitions(stage1_2 PRIVATE YY_NO_UNISTD_H)
+endif()
+
 # GCC requires -fpermissive for this code
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(stage1_2 PRIVATE -fpermissive)

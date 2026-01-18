@@ -49,7 +49,9 @@
 
 
 
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include <stdio.h>  /* required for NULL */
 #include "visitor.hh"

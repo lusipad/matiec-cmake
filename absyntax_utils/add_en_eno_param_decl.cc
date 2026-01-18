@@ -43,7 +43,11 @@
  */
 
 #include "add_en_eno_param_decl.hh"
+#ifdef _WIN32
+#include <string.h>
+#else
 #include <strings.h>
+#endif
 #include "../main.hh" // required for ERROR() and ERROR_MSG() macros.
 
 
