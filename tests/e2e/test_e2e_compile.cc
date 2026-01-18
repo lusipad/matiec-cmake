@@ -81,12 +81,13 @@ protected:
 // =============================================================================
 
 TEST_F(E2ECompileTest, CompileEmptyProgram) {
-    // matiec requires at least one variable or statement in a PROGRAM
+    // matiec requires at least one variable AND a statement in a PROGRAM
     CompileAndExpectSuccess(R"(
 PROGRAM empty_test
 VAR
     dummy : INT;
 END_VAR
+    dummy := 0;
 END_PROGRAM
 )");
 }
@@ -101,8 +102,6 @@ VAR
     s : STRING;
     t : TIME;
     d : DATE;
-    dt : DT;
-    tod : TOD;
 END_VAR
     i := 0;
 END_PROGRAM
