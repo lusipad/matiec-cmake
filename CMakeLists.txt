@@ -154,16 +154,14 @@ set(MATIEC_CORE_LIBS
 )
 
 # Library source files
+# Note: runtime_options.cc provides runtime_options and error_exit
+# main.cc is NOT included - it's only for command-line tools
+# getopt_compat.c is NOT included - it's only for command-line tools on Windows
 set(MATIEC_LIB_SOURCES
     src/matiec_lib.cc
     src/error_reporter.cc
-    main.cc
+    src/runtime_options.cc
 )
-
-# Add Windows-specific source files
-if(WIN32)
-    list(APPEND MATIEC_LIB_SOURCES util/getopt_compat.c)
-endif()
 
 # Static library
 if(MATIEC_BUILD_STATIC)

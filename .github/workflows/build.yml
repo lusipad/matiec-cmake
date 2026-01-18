@@ -27,8 +27,8 @@ jobs:
             name: linux-arm64
             cmake_generator: Ninja
             arch: arm64
-          # macOS x64 (Intel)
-          - os: macos-13
+          # macOS x64 (Intel) - use macos-15-intel instead of deprecated macos-13
+          - os: macos-15
             name: macos-x64
             cmake_generator: Ninja
             arch: x64
@@ -183,9 +183,13 @@ jobs:
           # Copy lib folder
           Copy-Item -Path "lib/*" -Destination "package/lib/" -Recurse
 
-          # Copy MSBuild integration files
-          Copy-Item -Path "build/matiec.props" -Destination "package/build/"
-          Copy-Item -Path "build/matiec.targets" -Destination "package/build/"
+          # Copy MSBuild integration files (if they exist)
+          if (Test-Path "build/matiec.props") {
+            Copy-Item -Path "build/matiec.props" -Destination "package/build/"
+          }
+          if (Test-Path "build/matiec.targets") {
+            Copy-Item -Path "build/matiec.targets" -Destination "package/build/"
+          }
 
           # Copy documentation
           Copy-Item -Path "README.md" -Destination "package/docs/"
