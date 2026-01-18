@@ -16,6 +16,7 @@
  */
 
 #include "matiec/matiec.h"
+#include "matiec/error.hpp"
 #include "config/config.h"
 #include "absyntax/absyntax.hh"
 #include "absyntax_utils/absyntax_utils.hh"
@@ -30,6 +31,12 @@
 #include <string>
 #include <vector>
 #include <fstream>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 /* Global error callback */
 static matiec_error_callback_t g_error_callback = nullptr;
@@ -129,6 +136,31 @@ MATIEC_API matiec_error_t matiec_compile_file(
     }
 
     result_init(result);
+
+    // Reset global error reporter for this compilation
+    matiec::resetGlobalErrorReporter();
+
+    // Set up error callback bridge if user provided one
+    if (g_error_callback) {
+        matiec::globalErrorReporter().setCallback(
+            [](const matiec::CompilerError& err) {
+                if (g_error_callback) {
+                    const char* file = nullptr;
+                    int line = 0;
+                    int column = 0;
+
+                    if (err.location() && err.location()->isValid()) {
+                        file = err.location()->filename.c_str();
+                        line = err.location()->line;
+                        column = err.location()->column;
+                    }
+
+                    g_error_callback(file, line, column,
+                                     err.message().c_str(), g_error_user_data);
+                }
+            }
+        );
+    }
 
     if (!input_file) {
         result_set_error(result, MATIEC_ERROR_INVALID_ARG, "Input file path is NULL");

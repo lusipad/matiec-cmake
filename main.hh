@@ -66,11 +66,33 @@ extern runtime_options_t runtime_options;
 
  /* Function used throughout the code --> used to report failed assertions (i.e. internal compiler errors)! */
 #include <stddef.h>  /* required for NULL */
- 
+
+/*
+ * Legacy error macros - maintained for backward compatibility.
+ *
+ * These macros call error_exit() which prints an error message and terminates.
+ * For new code, prefer using the modern error handling in <matiec/error.hpp>:
+ *   - MATIEC_INTERNAL_ERROR(msg) for internal errors
+ *   - MATIEC_ASSERT(cond, msg) for assertions
+ *   - matiec::globalErrorReporter() for collecting errors
+ */
 #define ERROR               error_exit(__FILE__,__LINE__)
 #define ERROR_MSG(msg, ...) error_exit(__FILE__,__LINE__, msg, ## __VA_ARGS__)
 
 extern void error_exit(const char *file_name, int line_no, const char *errmsg = NULL, ...);
+
+/*
+ * Modern error handling (C++17)
+ *
+ * Include <matiec/error.hpp> for:
+ *   - Structured error types (CompilerError, ParseError, SemanticError, TypeError)
+ *   - Error collection via ErrorReporter
+ *   - Error callbacks for integration
+ *
+ * Example:
+ *   #include <matiec/error.hpp>
+ *   matiec::globalErrorReporter().reportSemanticError("undefined variable", location);
+ */
 
 
 

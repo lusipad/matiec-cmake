@@ -5,10 +5,11 @@ project(matiec VERSION 0.1.0 LANGUAGES CXX C)
 option(MATIEC_BUILD_SHARED "Build shared library" ON)
 option(MATIEC_BUILD_STATIC "Build static library" ON)
 option(MATIEC_BUILD_TOOLS "Build command-line tools (iec2c, iec2iec)" ON)
+option(MATIEC_BUILD_TESTS "Build unit and integration tests" OFF)
 option(MATIEC_INSTALL "Generate install targets" ON)
 
-# C++ standard
-set(CMAKE_CXX_STANDARD 11)
+# C++ standard - C++17 for std::optional, std::string_view, etc.
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Export compile_commands.json for IDE support
@@ -155,6 +156,7 @@ set(MATIEC_CORE_LIBS
 # Library source files
 set(MATIEC_LIB_SOURCES
     src/matiec_lib.cc
+    src/error_reporter.cc
     main.cc
 )
 
@@ -324,17 +326,43 @@ if(MATIEC_INSTALL)
 endif()
 
 # ==============================================================================
+# Testing
+# ==============================================================================
+
+if(MATIEC_BUILD_TESTS)
+    enable_testing()
+
+    # Fetch GoogleTest
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG v1.14.0
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+
+    # Include GoogleTest module for gtest_discover_tests
+    include(GoogleTest)
+
+    add_subdirectory(tests)
+endif()
+
+# ==============================================================================
 # Print configuration summary
 # ==============================================================================
 
 message(STATUS "")
 message(STATUS "matiec ${PROJECT_VERSION} configuration:")
+message(STATUS "  C++ standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "  C++ compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "  Bison: ${BISON_EXECUTABLE}")
 message(STATUS "  Flex: ${FLEX_EXECUTABLE}")
 message(STATUS "  Build shared library: ${MATIEC_BUILD_SHARED}")
 message(STATUS "  Build static library: ${MATIEC_BUILD_STATIC}")
 message(STATUS "  Build tools: ${MATIEC_BUILD_TOOLS}")
+message(STATUS "  Build tests: ${MATIEC_BUILD_TESTS}")
 if(GIT_VERSION)
     message(STATUS "  Git version: ${GIT_VERSION}")
 endif()

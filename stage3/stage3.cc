@@ -166,9 +166,9 @@ int stage3(symbol_c *tree_root, symbol_c **ordered_tree_root) {
 	error_count += array_range_check(tree_root);
 	error_count += case_elements_check(tree_root);
 	error_count += remove_forward_dependencies(tree_root, ordered_tree_root);
-	
+
 	if (error_count > 0) {
-		fprintf(stderr, "%d error(s) found. Bailing out!\n", error_count); 
+		fprintf(stderr, "%d error(s) found. Bailing out!\n", error_count);
 		return -1;
 	}
 	return 0;
