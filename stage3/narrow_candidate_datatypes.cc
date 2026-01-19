@@ -913,7 +913,7 @@ void *narrow_candidate_datatypes_c::visit(function_declaration_c *symbol) {
 	
 	search_varfb_instance_type = new search_varfb_instance_type_c(symbol);
 	symbol->var_declarations_list->accept(*this);
-	if (debug) printf("Narrowing candidate data types list in body of function %s\n", ((token_c *)(symbol->derived_function_name))->value);
+  if (debug) printf("Narrowing candidate data types list in body of function %s\n", ((token_c *)(symbol->derived_function_name))->value.c_str());
 	symbol->function_body->accept(*this);
 	delete search_varfb_instance_type;
 	search_varfb_instance_type = NULL;
@@ -926,7 +926,7 @@ void *narrow_candidate_datatypes_c::visit(function_declaration_c *symbol) {
 void *narrow_candidate_datatypes_c::visit(function_block_declaration_c *symbol) {
 	search_varfb_instance_type = new search_varfb_instance_type_c(symbol);
 	symbol->var_declarations->accept(*this);
-	if (debug) printf("Narrowing candidate data types list in body of FB %s\n", ((token_c *)(symbol->fblock_name))->value);
+  if (debug) printf("Narrowing candidate data types list in body of FB %s\n", ((token_c *)(symbol->fblock_name))->value.c_str());
 	symbol->fblock_body->accept(*this);
 	delete search_varfb_instance_type;
 	search_varfb_instance_type = NULL;
@@ -943,7 +943,7 @@ void *narrow_candidate_datatypes_c::visit(function_block_declaration_c *symbol) 
 void *narrow_candidate_datatypes_c::visit(program_declaration_c *symbol) {
 	search_varfb_instance_type = new search_varfb_instance_type_c(symbol);
 	symbol->var_declarations->accept(*this);
-	if (debug) printf("Narrowing candidate data types list in body of program %s\n", ((token_c *)(symbol->program_type_name))->value);
+  if (debug) printf("Narrowing candidate data types list in body of program %s\n", ((token_c *)(symbol->program_type_name))->value.c_str());
 	symbol->function_block_body->accept(*this);
 	delete search_varfb_instance_type;
 	search_varfb_instance_type = NULL;
@@ -986,7 +986,7 @@ void *narrow_candidate_datatypes_c::visit(action_qualifier_c *symbol) {
 /* B 1.7 Configuration elements */
 /********************************/
 void *narrow_candidate_datatypes_c::visit(configuration_declaration_c *symbol) {
-	if (debug) printf("Narrowing candidate data types list in configuration %s\n", ((token_c *)(symbol->configuration_name))->value);
+  if (debug) printf("Narrowing candidate data types list in configuration %s\n", ((token_c *)(symbol->configuration_name))->value.c_str());
 	search_varfb_instance_type = new search_varfb_instance_type_c(symbol);
 	symbol->global_var_declarations->accept(*this);
 	symbol->resource_declarations            ->accept(*this); // points to a single_resource_declaration_c or a resource_declaration_list_c
@@ -999,7 +999,7 @@ void *narrow_candidate_datatypes_c::visit(configuration_declaration_c *symbol) {
 
 
 void *narrow_candidate_datatypes_c::visit(resource_declaration_c *symbol) {
-	if (debug) printf("Narrowing candidate data types list in resource %s\n", ((token_c *)(symbol->resource_name))->value);
+  if (debug) printf("Narrowing candidate data types list in resource %s\n", ((token_c *)(symbol->resource_name))->value.c_str());
 	search_varfb_instance_type_c *prev_search_varfb_instance_type = search_varfb_instance_type;
 	search_varfb_instance_type  =  new search_varfb_instance_type_c(symbol);
 	symbol->global_var_declarations->accept(*this);
@@ -1861,7 +1861,6 @@ void *narrow_candidate_datatypes_c::visit(repeat_statement_c *symbol) {
 		symbol->statement_list->accept(*this);
 	return NULL;
 }
-
 
 
 

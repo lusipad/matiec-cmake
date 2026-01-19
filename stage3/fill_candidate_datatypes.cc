@@ -1539,7 +1539,7 @@ void *fill_candidate_datatypes_c::visit(located_var_decl_c *symbol) {
 /* B 1.5.1 Functions */
 /*********************/
 void *fill_candidate_datatypes_c::visit(function_declaration_c *symbol) {
-	if (debug) printf("Filling candidate data types list of function %s\n", ((token_c *)(symbol->derived_function_name))->value);
+  if (debug) printf("Filling candidate data types list of function %s\n", ((token_c *)(symbol->derived_function_name))->value.c_str());
 	local_enumerated_value_symtable.reset();
 	current_scope = symbol;	
 	symbol->var_declarations_list->accept(populate_enumvalue_symtable);
@@ -1559,7 +1559,7 @@ void *fill_candidate_datatypes_c::visit(function_declaration_c *symbol) {
 /* B 1.5.2 Function blocks */
 /***************************/
 void *fill_candidate_datatypes_c::visit(function_block_declaration_c *symbol) {
-	if (debug) printf("Filling candidate data types list of FB %s\n", ((token_c *)(symbol->fblock_name))->value);
+  if (debug) printf("Filling candidate data types list of FB %s\n", ((token_c *)(symbol->fblock_name))->value.c_str());
 	local_enumerated_value_symtable.reset();
 	current_scope = symbol;	
 	symbol->var_declarations->accept(populate_enumvalue_symtable);
@@ -1585,7 +1585,7 @@ void *fill_candidate_datatypes_c::visit(function_block_declaration_c *symbol) {
 /* B 1.5.3 - Programs */
 /**********************/
 void *fill_candidate_datatypes_c::visit(program_declaration_c *symbol) {
-	if (debug) printf("Filling candidate data types list in program %s\n", ((token_c *)(symbol->program_type_name))->value);
+  if (debug) printf("Filling candidate data types list in program %s\n", ((token_c *)(symbol->program_type_name))->value.c_str());
 	local_enumerated_value_symtable.reset();
 	current_scope = symbol;	
 	symbol->var_declarations->accept(populate_enumvalue_symtable);
@@ -1631,7 +1631,7 @@ void *fill_candidate_datatypes_c::visit(transition_condition_c *symbol) {
 /* B 1.7 Configuration elements */
 /********************************/
 void *fill_candidate_datatypes_c::visit(configuration_declaration_c *symbol) {
-	if (debug) printf("Filling candidate data types list in configuration %s\n", ((token_c *)(symbol->configuration_name))->value);
+  if (debug) printf("Filling candidate data types list in configuration %s\n", ((token_c *)(symbol->configuration_name))->value.c_str());
 	current_scope = symbol;
 //	local_enumerated_value_symtable.reset();  // TODO
 //	symbol->global_var_declarations->accept(populate_enumvalue_symtable);  // TODO
@@ -1652,7 +1652,7 @@ void *fill_candidate_datatypes_c::visit(configuration_declaration_c *symbol) {
 
 
 void *fill_candidate_datatypes_c::visit(resource_declaration_c *symbol) {
-	if (debug) printf("Filling candidate data types list in resource %s\n", ((token_c *)(symbol->resource_name))->value);
+  if (debug) printf("Filling candidate data types list in resource %s\n", ((token_c *)(symbol->resource_name))->value.c_str());
 //	local_enumerated_value_symtable.reset();  // TODO-> this must be replaced with local_enumerated_value_symtable.push(), which is not yet implemented for the dsyntable_c!
 	symbol_c *prev_scope = current_scope;
 	current_scope = symbol;
@@ -2377,7 +2377,6 @@ void *fill_candidate_datatypes_c::visit(repeat_statement_c *symbol) {
 		symbol->statement_list->accept(*this);
 	return NULL;
 }
-
 
 
 

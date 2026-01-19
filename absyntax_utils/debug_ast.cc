@@ -126,7 +126,7 @@ void print_symbol_c::dump_symbol(symbol_c* symbol) {
   fprintf(stderr, "(%s->%03d:%03d..%03d:%03d) \t%s", symbol->first_file, symbol->first_line, symbol->first_column, symbol->last_line, symbol->last_column, symbol->absyntax_cname());
 
   if ((NULL != symbol->token) && (NULL != symbol->token->value))
-    fprintf(stderr, "(%s)", symbol->token->value);
+    fprintf(stderr, "(%s)", symbol->token->value.c_str());
 
   fprintf(stderr, "\t  datatype=");
   if (NULL == symbol->datatype)
@@ -253,7 +253,6 @@ void debug_c::print(symbol_c *symbol) {
 void debug_c::print_ast(symbol_c *symbol) {
   print_ast_c::print(symbol);
 }
-
 
 
 

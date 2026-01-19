@@ -682,10 +682,13 @@ static std::string normalize_subrange_limit(symbol_c *symbol) {
   symbolic_variable_c *symvar   = dynamic_cast<symbolic_variable_c *>(symbol);
   if (NULL != symconst) token   = dynamic_cast<            token_c *>(symconst->var_name);
   if (NULL != symvar  ) token   = dynamic_cast<            token_c *>(symvar  ->var_name);
-  if (NULL != token)
+  if (NULL != token) {
     // handle it as a symbolic_variable/constant_c
-    return token->value;    
-  
+    const char *s = token->value.c_str();
+    if (s == NULL) ERROR;
+    return s;
+  }
+
   ERROR;
   return NULL; // humour the compiler...
 }
@@ -1468,7 +1471,6 @@ safedt_type_name_c       get_datatype_info_c::safedt_type_name;
 safedate_type_name_c     get_datatype_info_c::safedate_type_name;
 safetod_type_name_c      get_datatype_info_c::safetod_type_name;
 safetime_type_name_c     get_datatype_info_c::safetime_type_name;
-
 
 
 

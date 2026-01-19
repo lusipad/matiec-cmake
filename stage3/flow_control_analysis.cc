@@ -165,7 +165,7 @@ void flow_control_analysis_c::link_pushback(symbol_c *prev_instruction, symbol_c
 /*********************/
 void *flow_control_analysis_c::visit(function_declaration_c *symbol) {
 	search_il_label = new search_il_label_c(symbol);
-	if (debug) printf("Doing flow control analysis in body of function %s\n", ((token_c *)(symbol->derived_function_name))->value);
+  if (debug) printf("Doing flow control analysis in body of function %s\n", ((token_c *)(symbol->derived_function_name))->value.c_str());
 	symbol->function_body->accept(*this);
 	delete search_il_label;
 	search_il_label = NULL;
@@ -177,7 +177,7 @@ void *flow_control_analysis_c::visit(function_declaration_c *symbol) {
 /***************************/
 void *flow_control_analysis_c::visit(function_block_declaration_c *symbol) {
 	search_il_label = new search_il_label_c(symbol);
-	if (debug) printf("Doing flow control analysis in body of FB %s\n", ((token_c *)(symbol->fblock_name))->value);
+  if (debug) printf("Doing flow control analysis in body of FB %s\n", ((token_c *)(symbol->fblock_name))->value.c_str());
 	symbol->fblock_body->accept(*this);
 	delete search_il_label;
 	search_il_label = NULL;
@@ -189,7 +189,7 @@ void *flow_control_analysis_c::visit(function_block_declaration_c *symbol) {
 /********************/
 void *flow_control_analysis_c::visit(program_declaration_c *symbol) {
 	search_il_label = new search_il_label_c(symbol);
-	if (debug) printf("Doing flow control analysis in body of program %s\n", ((token_c *)(symbol->program_type_name))->value);
+  if (debug) printf("Doing flow control analysis in body of program %s\n", ((token_c *)(symbol->program_type_name))->value.c_str());
 	symbol->function_block_body->accept(*this);
 	delete search_il_label;
 	search_il_label = NULL;
@@ -399,4 +399,3 @@ void *flow_control_analysis_c::visit(  JMP_operator_c *symbol) {
 // void *visit(il_assign_operator_c *symbol, variable_name);
 /* Symbol class handled together with function call checks */
 // void *visit(il_assign_operator_c *symbol, option, variable_name);
-
