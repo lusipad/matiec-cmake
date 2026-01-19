@@ -189,16 +189,23 @@ list_c::~list_c(void) {
 
 namespace matiec {
 
-char* cstr_pool_strdup(const char* s) {
-    if (!s) return nullptr;
-#ifdef _WIN32
-    char* dup = _strdup(s);
-#else
-    char* dup = ::strdup(s);
-#endif
+char* cstr_pool_strdup(std::string_view s) {
+    // Preserve the "null pointer means null string" convention used by legacy code.
+    if (s.data() == nullptr) return nullptr;
+
+    char* dup = static_cast<char*>(std::malloc(s.size() + 1));
     if (!dup) return nullptr;
+    if (!s.empty()) {
+        std::memcpy(dup, s.data(), s.size());
+    }
+    dup[s.size()] = '\0';
     cstr_pool().push_back(dup);
     return dup;
+}
+
+char* cstr_pool_strdup(const char* s) {
+    if (!s) return nullptr;
+    return cstr_pool_strdup(std::string_view{s});
 }
 
 char* cstr_pool_take(char* s) {

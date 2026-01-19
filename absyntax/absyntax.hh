@@ -50,6 +50,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <string_view>
 #include <cstddef>
 #include <stdint.h>  // required for uint64_t, etc...
 #include "../main.hh" // required for uint8_t, real_64_t, ..., and the macros INT8_MAX, REAL32_MAX, ... */
@@ -361,6 +362,7 @@ class list_c: public symbol_c {
 namespace matiec {
   /* C string pool used by the lexer/parser to keep token values and filenames
    * alive for the duration of a compilation (and then free them in one shot). */
+  char* cstr_pool_strdup(std::string_view s);
   char* cstr_pool_strdup(const char* s);
   char* cstr_pool_take(char* s);
   void  cstr_pool_clear() noexcept;

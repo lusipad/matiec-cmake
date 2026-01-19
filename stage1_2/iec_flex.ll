@@ -126,6 +126,7 @@
 /* Required for strdup() */
 #include <string.h>
 #include <string>
+#include <string_view>
 #include <new>
 
 /* Required only for the declaration of abstract syntax classes
@@ -1007,14 +1008,16 @@ incompl_location	%[IQM]\*
 <body_state>{pragma}					append_bodystate_buffer(yytext); /* in body state we do not process any tokens, we simply store them for later processing! */
 {pragma}	{/* return the pragmma without the enclosing '{' and '}' */
 		 int cut = yytext[1]=='{'?2:1;
-		 yytext[strlen(yytext)-cut] = '\0';
-                 yylval.ID=matiec::cstr_pool_strdup(yytext+cut);
+		 yytext[yyleng-cut] = '\0';
+                 yylval.ID=matiec::cstr_pool_strdup(std::string_view(
+                     yytext+cut, static_cast<size_t>(yyleng-(2*cut))));
 		 return pragma_token;
 		}
 <vardecl_list_state>{pragma}/(VAR) {/* return the pragmma without the enclosing '{' and '}' */
 		 int cut = yytext[1]=='{'?2:1;
-		 yytext[strlen(yytext)-cut] = '\0';
-                 yylval.ID=matiec::cstr_pool_strdup(yytext+cut);
+		 yytext[yyleng-cut] = '\0';
+                 yylval.ID=matiec::cstr_pool_strdup(std::string_view(
+                     yytext+cut, static_cast<size_t>(yyleng-(2*cut))));
 		 return pragma_token;
 		}
 
@@ -1106,7 +1109,7 @@ CONFIGURATION{st_whitespace}		if (get_preparse_state()) BEGIN(get_pou_name_state
 }
 
 <get_pou_name_state>{
-{identifier}			BEGIN(ignore_pou_state); yylval.ID=matiec::cstr_pool_strdup(yytext); return identifier_token;
+{identifier}			BEGIN(ignore_pou_state); yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return identifier_token;
 .				BEGIN(ignore_pou_state); unput_text(0);
 }
 
@@ -1844,33 +1847,33 @@ EXIT		return EXIT;		/* Keyword */
 	/********************************************/
 	/* B.1.4.1   Directly Represented Variables */
 	/********************************************/
-{direct_variable}   {yylval.ID=matiec::cstr_pool_strdup(yytext); return get_direct_variable_token(yytext);}
+{direct_variable}   {yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return get_direct_variable_token(yytext);}
 
 
 	/******************************************/
 	/* B 1.4.3 - Declaration & Initialisation */
 	/******************************************/
-{incompl_location}	{yylval.ID=matiec::cstr_pool_strdup(yytext); return incompl_location_token;}
+{incompl_location}	{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return incompl_location_token;}
 
 
 	/************************/
 	/* B 1.2.3.1 - Duration */
 	/************************/
-{fixed_point}		{yylval.ID=matiec::cstr_pool_strdup(yytext); return fixed_point_token;}   
+{fixed_point}		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return fixed_point_token;}   
 {interval}		{/*fprintf(stderr, "entering time_literal_state ##%s##\n", yytext);*/ unput_and_mark('#'); yy_push_state(time_literal_state);}
 {erroneous_interval}	{return erroneous_interval_token;}
 
 <time_literal_state>{
-{integer}d		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_d_token;}
-{integer}h		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_h_token;}
-{integer}m		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_m_token;}
-{integer}s		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_s_token;}
-{integer}ms		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-2] = '\0'; return integer_ms_token;}
-{fixed_point}d		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_d_token;}
-{fixed_point}h		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_h_token;}
-{fixed_point}m		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_m_token;}
-{fixed_point}s		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_s_token;}
-{fixed_point}ms		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-2] = '\0'; return fixed_point_ms_token;}
+{integer}d		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-1] = '\0'; return integer_d_token;}
+{integer}h		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-1] = '\0'; return integer_h_token;}
+{integer}m		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-1] = '\0'; return integer_m_token;}
+{integer}s		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-1] = '\0'; return integer_s_token;}
+{integer}ms		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-2] = '\0'; return integer_ms_token;}
+{fixed_point}d		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-1] = '\0'; return fixed_point_d_token;}
+{fixed_point}h		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-1] = '\0'; return fixed_point_h_token;}
+{fixed_point}m		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-1] = '\0'; return fixed_point_m_token;}
+{fixed_point}s		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-1] = '\0'; return fixed_point_s_token;}
+{fixed_point}ms		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); yylval.ID[yyleng-2] = '\0'; return fixed_point_ms_token;}
 
 _			/* do nothing - eat it up!*/
 \#			{/*fprintf(stderr, "popping from time_literal_state (###)\n");*/ yy_pop_state(); return end_interval_token;}
@@ -1880,26 +1883,26 @@ _			/* do nothing - eat it up!*/
 	/*******************************/
 	/* B.1.2.2   Character Strings */
 	/*******************************/
-{double_byte_character_string} {yylval.ID=matiec::cstr_pool_strdup(yytext); return double_byte_character_string_token;}
-{single_byte_character_string} {yylval.ID=matiec::cstr_pool_strdup(yytext); return single_byte_character_string_token;}
+{double_byte_character_string} {yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return double_byte_character_string_token;}
+{single_byte_character_string} {yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return single_byte_character_string_token;}
 
 
 	/******************************/
 	/* B.1.2.1   Numeric literals */
 	/******************************/
-{integer}		{yylval.ID=matiec::cstr_pool_strdup(yytext); return integer_token;}
-{real}			{yylval.ID=matiec::cstr_pool_strdup(yytext); return real_token;}
-{binary_integer}	{yylval.ID=matiec::cstr_pool_strdup(yytext); return binary_integer_token;}
-{octal_integer} 	{yylval.ID=matiec::cstr_pool_strdup(yytext); return octal_integer_token;}
-{hex_integer} 		{yylval.ID=matiec::cstr_pool_strdup(yytext); return hex_integer_token;}
+{integer}		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return integer_token;}
+{real}			{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return real_token;}
+{binary_integer}	{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return binary_integer_token;}
+{octal_integer} 	{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return octal_integer_token;}
+{hex_integer} 		{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return hex_integer_token;}
 
 
 	/*****************************************/
 	/* B.1.1 Letters, digits and identifiers */
 	/*****************************************/
-<st_state>{identifier}/({st_whitespace_or_pragma_or_comment})"=>"	{yylval.ID=matiec::cstr_pool_strdup(yytext); return sendto_identifier_token;}
-<il_state>{identifier}/({il_whitespace_or_pragma_or_comment})"=>"	{yylval.ID=matiec::cstr_pool_strdup(yytext); return sendto_identifier_token;}
-{identifier} 				{yylval.ID=matiec::cstr_pool_strdup(yytext);
+<st_state>{identifier}/({st_whitespace_or_pragma_or_comment})"=>"	{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return sendto_identifier_token;}
+<il_state>{identifier}/({il_whitespace_or_pragma_or_comment})"=>"	{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng))); return sendto_identifier_token;}
+{identifier} 				{yylval.ID=matiec::cstr_pool_strdup(std::string_view(yytext, static_cast<size_t>(yyleng)));
 					 // printf("returning identifier...: %s, %d\n", yytext, get_identifier_token(yytext));
 					 return get_identifier_token(yytext);}
 
