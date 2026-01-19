@@ -43,29 +43,12 @@
 
 
 template<typename value_type> class symtable_c {
-  /* Case insensitive string compare copied from
-   * "The C++ Programming Language" - 3rd Edition
-   * by Bjarne Stroustrup, ISBN 0201889544.
-   */
-  class nocase_c {
-    public:
-      bool operator() (const std::string& x, const std::string& y) const {
-        std::string::const_iterator ix = x.begin();
-        std::string::const_iterator iy = y.begin();
-
-        for(; (ix != x.end()) && (iy != y.end()) && (toupper(*ix) == toupper(*iy)); ++ix, ++iy);
-        if (ix == x.end()) return (iy != y.end());
-        if (iy == y.end()) return false;
-        return (toupper(*ix) < toupper(*iy));
-      };
-  };
-
   public:
     typedef value_type value_t;
 
   private:
-    /* Comparison between identifiers must ignore case, therefore the use of nocase_c */
-    typedef std::map<std::string, value_t, nocase_c> base_t;
+    /* Comparison between identifiers must ignore case. */
+    typedef std::map<std::string, value_t, nocasecmp_c> base_t;
     base_t _base;
 
   public:
