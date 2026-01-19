@@ -2331,9 +2331,14 @@ class generate_c_backup_resource_c: public generate_c_base_and_typeid_c {
       if (symbol->global_var_declarations == NULL)
         return NULL;
 
-      char *resource_name = strdup(symbol->resource_name->token->value);
+      const char* raw_resource_name = (symbol->resource_name && symbol->resource_name->token)
+                                          ? symbol->resource_name->token->value
+                                          : nullptr;
+      std::string resource_name = raw_resource_name ? raw_resource_name : "";
       /* convert to upper case */
-      for (char *c = resource_name; *c != '\0'; *c = toupper(*c), c++);
+      for (char& ch : resource_name) {
+        ch = static_cast<char>(toupper(static_cast<unsigned char>(ch)));
+      }
       
       generate_c_vardecl_c vardecl = generate_c_vardecl_c(&s4o,
                                          generate_c_vardecl_c::local_vf,
@@ -2354,11 +2359,11 @@ class generate_c_backup_resource_c: public generate_c_base_and_typeid_c {
       s4o.print("#undef " DECLARE_GLOBAL_LOCATION "\n");
       s4o.print("#undef " DECLARE_GLOBAL_LOCATED  "\n");
       
-      print_backup_restore_function_beg(s4o, resource_name, "_backup__");
+      print_backup_restore_function_beg(s4o, resource_name.c_str(), "_backup__");
       vardecl.print(symbol->global_var_declarations);
       print_backup_restore_function_end(s4o);      
     
-      print_backup_restore_function_beg(s4o, resource_name, "_restore__");
+      print_backup_restore_function_beg(s4o, resource_name.c_str(), "_restore__");
       vardecl.print(symbol->global_var_declarations);
       print_backup_restore_function_end(s4o);      
     
@@ -2653,4 +2658,3 @@ class generate_c_c: public iterator_visitor_c {
 
 visitor_c *new_code_generator(stage4out_c *s4o, const char *builddir)  {return new generate_c_c(s4o, builddir);}
 void delete_code_generator(visitor_c *code_generator) {delete code_generator;}
-
