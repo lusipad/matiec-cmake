@@ -62,6 +62,15 @@ aclocal.m4
 iec2c
 iec2iec
 
+# CMake build directories
+/build*/
+
+# Common compiler outputs when running in the source tree
+/POUS.c
+/POUS.h
+/LOCATED_VARIABLES.h
+/VARIABLES.csv
+
 stage1_2/iec_bison.cc
 stage1_2/iec_bison.h*
 stage1_2/iec_flex.cc
