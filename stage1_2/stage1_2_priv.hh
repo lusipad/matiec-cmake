@@ -141,6 +141,10 @@ void include_string(const char *source_code);
  */
 FILE *parse_file(const char *filename);
 
+/* Reset/cleanup the flex scanner between parsing runs. */
+void stage1_2_lex_reset(void);
+void stage1_2_lex_cleanup(void);
+
 
 /**********************************************************************************************/
 /* whether bison is doing the pre-parsing, where POU bodies and var declarations are ignored! */
@@ -255,6 +259,5 @@ char *strdup2(const char *a, const char *b);
 
 /* Join three strings together. Allocate space with malloc(3). */
 char *strdup3(const char *a, const char *b, const char *c);
-
 
 

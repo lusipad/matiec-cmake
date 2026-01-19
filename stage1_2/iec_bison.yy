@@ -162,6 +162,7 @@ void yyerror (const char *error_msg);
 
 
 #include "../main.hh" // required for ERROR() and ERROR_MSG() macros.
+#include "matiec/error.hpp" // structured error reporting (P1 modernization)
 
 
 
@@ -4931,7 +4932,7 @@ standard_function_name_simpleop_clashes:
 /* standard_function_name_NOT_clashes is only used in function invocations, so we use the poutype_identifier_c class! */
 standard_function_name_NOT_clashes:
   NOT
-	{$$ = new poutype_identifier_c(strdup("NOT"), locloc(@$));}
+	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("NOT"), locloc(@$));}
 ;
 
 /* Add here any other IL simple operators that collide
@@ -4948,20 +4949,20 @@ standard_function_name_simpleop_only_clashes:
 
 /* standard_function_name_expression_clashes is only used in function invocations, so we use the poutype_identifier_c class! */
 standard_function_name_expression_clashes:
-  AND	{$$ = new poutype_identifier_c(strdup("AND"), locloc(@$));}
-| OR	{$$ = new poutype_identifier_c(strdup("OR"), locloc(@$));}
-| XOR	{$$ = new poutype_identifier_c(strdup("XOR"), locloc(@$));}
-| ADD	{$$ = new poutype_identifier_c(strdup("ADD"), locloc(@$));}
-| SUB	{$$ = new poutype_identifier_c(strdup("SUB"), locloc(@$));}
-| MUL	{$$ = new poutype_identifier_c(strdup("MUL"), locloc(@$));}
-| DIV	{$$ = new poutype_identifier_c(strdup("DIV"), locloc(@$));}
-| MOD	{$$ = new poutype_identifier_c(strdup("MOD"), locloc(@$));}
-| GT	{$$ = new poutype_identifier_c(strdup("GT"), locloc(@$));}
-| GE	{$$ = new poutype_identifier_c(strdup("GE"), locloc(@$));}
-| EQ	{$$ = new poutype_identifier_c(strdup("EQ"), locloc(@$));}
-| LT	{$$ = new poutype_identifier_c(strdup("LT"), locloc(@$));}
-| LE	{$$ = new poutype_identifier_c(strdup("LE"), locloc(@$));}
-| NE	{$$ = new poutype_identifier_c(strdup("NE"), locloc(@$));}
+  AND	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("AND"), locloc(@$));}
+| OR	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("OR"), locloc(@$));}
+| XOR	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("XOR"), locloc(@$));}
+| ADD	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("ADD"), locloc(@$));}
+| SUB	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("SUB"), locloc(@$));}
+| MUL	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("MUL"), locloc(@$));}
+| DIV	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("DIV"), locloc(@$));}
+| MOD	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("MOD"), locloc(@$));}
+| GT	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("GT"), locloc(@$));}
+| GE	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("GE"), locloc(@$));}
+| EQ	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("EQ"), locloc(@$));}
+| LT	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("LT"), locloc(@$));}
+| LE	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("LE"), locloc(@$));}
+| NE	{$$ = new poutype_identifier_c(matiec::cstr_pool_strdup("NE"), locloc(@$));}
 /*
   AND_operator	{$$ = il_operator_c_2_poutype_identifier_c($1);}
 //NOTE: AND2 (corresponding to the source code string '&') does not clash
@@ -5667,20 +5668,20 @@ action_qualifier:
 ;
 
 qualifier:
-  N		{$$ = new qualifier_c(strdup("N"), locloc(@$));}
-| R		{$$ = new qualifier_c(strdup("R"), locloc(@$));}
-| S		{$$ = new qualifier_c(strdup("S"), locloc(@$));}
-| P		{$$ = new qualifier_c(strdup("P"), locloc(@$));}
-| P0	{$$ = new qualifier_c(strdup("P0"), locloc(@$));}
-| P1	{$$ = new qualifier_c(strdup("P1"), locloc(@$));}
+  N		{$$ = new qualifier_c(matiec::cstr_pool_strdup("N"), locloc(@$));}
+| R		{$$ = new qualifier_c(matiec::cstr_pool_strdup("R"), locloc(@$));}
+| S		{$$ = new qualifier_c(matiec::cstr_pool_strdup("S"), locloc(@$));}
+| P		{$$ = new qualifier_c(matiec::cstr_pool_strdup("P"), locloc(@$));}
+| P0	{$$ = new qualifier_c(matiec::cstr_pool_strdup("P0"), locloc(@$));}
+| P1	{$$ = new qualifier_c(matiec::cstr_pool_strdup("P1"), locloc(@$));}
 ;
 
 timed_qualifier:
-  L		{$$ = new timed_qualifier_c(strdup("L"), locloc(@$));}
-| D		{$$ = new timed_qualifier_c(strdup("D"), locloc(@$));}
-| SD		{$$ = new timed_qualifier_c(strdup("SD"), locloc(@$));}
-| DS		{$$ = new timed_qualifier_c(strdup("DS"), locloc(@$));}
-| SL		{$$ = new timed_qualifier_c(strdup("SL"), locloc(@$));}
+  L		{$$ = new timed_qualifier_c(matiec::cstr_pool_strdup("L"), locloc(@$));}
+| D		{$$ = new timed_qualifier_c(matiec::cstr_pool_strdup("D"), locloc(@$));}
+| SD		{$$ = new timed_qualifier_c(matiec::cstr_pool_strdup("SD"), locloc(@$));}
+| DS		{$$ = new timed_qualifier_c(matiec::cstr_pool_strdup("DS"), locloc(@$));}
+| SL		{$$ = new timed_qualifier_c(matiec::cstr_pool_strdup("SL"), locloc(@$));}
 ;
 
 /* NOTE: A step_name may be used as a structured vaqriable, in order to access the status bit (e.g. Step1.X) 
@@ -8585,6 +8586,23 @@ void print_err_msg(int first_line,
   }
   //fprintf(stderr, "error %d: %s\n", yynerrs /* a global variable */, additional_error_msg);
   print_include_stack();
+
+  // Bridge legacy parser diagnostics into the modern error reporter so the C API
+  // and tests can observe parse errors without relying on stderr.
+  if (additional_error_msg != NULL) {
+    matiec::SourceLocation loc;
+    if ((first_filename != NULL) && (strcmp(first_filename, unknown_file) != 0)) {
+      loc.filename = first_filename;
+    }
+    loc.line = first_line;
+    loc.column = first_column;
+
+    if (loc.isValid()) {
+      matiec::globalErrorReporter().reportParseError(additional_error_msg, loc);
+    } else {
+      matiec::globalErrorReporter().reportParseError(additional_error_msg);
+    }
+  }
 }
 
 
@@ -8620,7 +8638,7 @@ identifier_c *token_2_identifier_c(char *value, ) {
  */
 poutype_identifier_c *il_operator_c_2_poutype_identifier_c(symbol_c *il_operator) {
   identifier_c         *    id = il_operator_c_2_identifier_c(il_operator);
-  poutype_identifier_c *pou_id = new poutype_identifier_c(strdup(id->value));
+  poutype_identifier_c *pou_id = new poutype_identifier_c(matiec::cstr_pool_strdup(id->value));
 
   *(symbol_c *)pou_id = *(symbol_c *)id;
   delete id;
@@ -8707,7 +8725,7 @@ identifier_c *il_operator_c_2_identifier_c(symbol_c *il_operator) {
                         );
   free(il_operator);
 */
-  res = new identifier_c(strdup(name));
+  res = new identifier_c(matiec::cstr_pool_strdup(name));
   *(symbol_c *)res = *(symbol_c *)il_operator;
   delete il_operator;
   
@@ -8766,7 +8784,10 @@ static int parse_files(const char *libfilename, const char *filename) {
   allow_ref_to_in_derived_datatypes    = runtime_options.ref_nonstand_extensions;
   if (yyparse() != 0) {
     fprintf (stderr, "\nParsing failed because of too many consecutive syntax errors in standard library. Bailing out!\n");
-    exit(EXIT_FAILURE);
+    matiec::globalErrorReporter().reportParseError(
+        "Parsing failed because of too many consecutive syntax errors in standard library.");
+    fclose(libfile);
+    return -2;
   }
   fclose(libfile);
       
@@ -8803,13 +8824,16 @@ static int parse_files(const char *libfilename, const char *filename) {
 
   if (yyparse() != 0) {
     fprintf (stderr, "\nParsing failed because of too many consecutive syntax errors. Bailing out!\n");
-    exit(EXIT_FAILURE);
+    matiec::globalErrorReporter().reportParseError(
+        "Parsing failed because of too many consecutive syntax errors.");
+    fclose(mainfile);
+    return -4;
   }
   fclose(mainfile);
-  
+
   if (yynerrs > 0) {
     fprintf (stderr, "\n%d error(s) found. Bailing out!\n", yynerrs /* global variable */);
-    exit(EXIT_FAILURE);
+    return -4;
   }
 
   return 0;
@@ -8850,16 +8874,26 @@ static int parse_files(const char *libfilename, const char *filename) {
 
 int stage2__(const char *filename, 
              symbol_c **tree_root_ref
-            ) {             
+            ) {
   char *libfilename = NULL;
+  int res = 0;
+
+  stage1_2_lex_reset();
+  tree_root = NULL;
+  yynerrs = 0;
 
   /* Determine the full path name of the standard library file... */
   if (runtime_options.includedir != NULL)
     INCLUDE_DIRECTORIES[0] = runtime_options.includedir;
 
-  if ((libfilename = strdup3(INCLUDE_DIRECTORIES[0], "/", LIBFILE)) == NULL) {
+  if ((libfilename = strdup3(INCLUDE_DIRECTORIES[0], "/", LIBFILE)) == NULL) {  
     fprintf (stderr, "Out of memory. Bailing out!\n");
-    exit(EXIT_FAILURE);
+    matiec::globalErrorReporter().report(
+        matiec::ErrorSeverity::Fatal,
+        matiec::ErrorCategory::Internal,
+        "Out of memory while building standard library path");
+    res = -1;
+    goto cleanup;
   }
 
   /*******************************/
@@ -8867,37 +8901,46 @@ int stage2__(const char *filename,
   /*******************************/
   if (runtime_options.pre_parsing) {
     // fprintf (stderr, "----> Starting pre-parsing!\n");
+    stage1_2_lex_reset();
     tree_root = NULL;
     set_preparse_state();
-    if (parse_files(libfilename, filename) < 0)
-      exit(EXIT_FAILURE);
-    // TODO: delete the current AST. For the moment, we leave all the objects in memory (not much of an issue in a program that always runs to completion).
+    res = parse_files(libfilename, filename);
+    if (res < 0) {
+      goto cleanup;
+    }
+
+    /* Free the temporary AST built during pre-parsing (we keep the filled
+     * library_element_symtable for the main parsing run). */
+    matiec::ast_delete(tree_root);
+    tree_root = NULL;
   }
   /*******************************/
   /* Do the main parsing run...! */
   /*******************************/
   // fprintf (stderr, "----> Starting normal parsing!\n");
+  stage1_2_lex_reset();
   tree_root = NULL;
   rst_preparse_state();
-  if (parse_files(libfilename, filename) < 0)
-    exit(EXIT_FAILURE);
-  
+  res = parse_files(libfilename, filename);
+  if (res < 0) {
+    goto cleanup;
+  }
+
 
   /* Final clean-up... */
-  free(libfilename);
+  res = 0;
+
+cleanup:
+  if (libfilename != NULL) {
+    free(libfilename);
+    libfilename = NULL;
+  }
   if (tree_root_ref != NULL)
     *tree_root_ref = tree_root;
 
-  return 0;
+  stage1_2_lex_cleanup();
+  return res;
 }
-
-
-
-
-
-
-
-
 
 
 

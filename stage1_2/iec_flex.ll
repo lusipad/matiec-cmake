@@ -141,12 +141,19 @@
  */
 #include "iec_bison.hh"
 #include "stage1_2_priv.hh"
+#include "matiec/error.hpp"
+
+/* Global error counter used by bison (yyparse). */
+extern int yynerrs;
 
 
 /* Variable defined by the bison parser,
  * where the value of the tokens will be stored
  */
 extern YYSTYPE yylval;
+
+/* Provided by flex-generated code; used to reset scanner state between parses. */
+int yylex_destroy(void);
 
 /* The name of the file currently being parsed...
  * Note that flex accesses and updates this global variable
@@ -999,13 +1006,13 @@ incompl_location	%[IQM]\*
 {pragma}	{/* return the pragmma without the enclosing '{' and '}' */
 		 int cut = yytext[1]=='{'?2:1;
 		 yytext[strlen(yytext)-cut] = '\0';
-		 yylval.ID=strdup(yytext+cut);
+                 yylval.ID=matiec::cstr_pool_strdup(yytext+cut);
 		 return pragma_token;
 		}
 <vardecl_list_state>{pragma}/(VAR) {/* return the pragmma without the enclosing '{' and '}' */
 		 int cut = yytext[1]=='{'?2:1;
 		 yytext[strlen(yytext)-cut] = '\0';
-		 yylval.ID=strdup(yytext+cut);
+                 yylval.ID=matiec::cstr_pool_strdup(yytext+cut);
 		 return pragma_token;
 		}
 
@@ -1097,7 +1104,7 @@ CONFIGURATION{st_whitespace}		if (get_preparse_state()) BEGIN(get_pou_name_state
 }
 
 <get_pou_name_state>{
-{identifier}			BEGIN(ignore_pou_state); yylval.ID=strdup(yytext); return identifier_token;
+{identifier}			BEGIN(ignore_pou_state); yylval.ID=matiec::cstr_pool_strdup(yytext); return identifier_token;
 .				BEGIN(ignore_pou_state); unput_text(0);
 }
 
@@ -1339,7 +1346,7 @@ END_CONFIGURATION	BEGIN(INITIAL); return END_CONFIGURATION;
                   *       'MOD' et al must be removed from the 
                   *       library_symbol_table as a default function name!
 		  * //
-		   yylval.ID=strdup(yytext);
+		   yylval.ID=matiec::cstr_pool_strdup(yytext);
 		   // fprintf(stderr, "returning token %d\n", token); 
 		   return token;
 		 }
@@ -1835,33 +1842,33 @@ EXIT		return EXIT;		/* Keyword */
 	/********************************************/
 	/* B.1.4.1   Directly Represented Variables */
 	/********************************************/
-{direct_variable}   {yylval.ID=strdup(yytext); return get_direct_variable_token(yytext);}
+{direct_variable}   {yylval.ID=matiec::cstr_pool_strdup(yytext); return get_direct_variable_token(yytext);}
 
 
 	/******************************************/
 	/* B 1.4.3 - Declaration & Initialisation */
 	/******************************************/
-{incompl_location}	{yylval.ID=strdup(yytext); return incompl_location_token;}
+{incompl_location}	{yylval.ID=matiec::cstr_pool_strdup(yytext); return incompl_location_token;}
 
 
 	/************************/
 	/* B 1.2.3.1 - Duration */
 	/************************/
-{fixed_point}		{yylval.ID=strdup(yytext); return fixed_point_token;}
+{fixed_point}		{yylval.ID=matiec::cstr_pool_strdup(yytext); return fixed_point_token;}   
 {interval}		{/*fprintf(stderr, "entering time_literal_state ##%s##\n", yytext);*/ unput_and_mark('#'); yy_push_state(time_literal_state);}
 {erroneous_interval}	{return erroneous_interval_token;}
 
 <time_literal_state>{
-{integer}d		{yylval.ID=strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_d_token;}
-{integer}h		{yylval.ID=strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_h_token;}
-{integer}m		{yylval.ID=strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_m_token;}
-{integer}s		{yylval.ID=strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_s_token;}
-{integer}ms		{yylval.ID=strdup(yytext); yylval.ID[yyleng-2] = '\0'; return integer_ms_token;}
-{fixed_point}d		{yylval.ID=strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_d_token;}
-{fixed_point}h		{yylval.ID=strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_h_token;}
-{fixed_point}m		{yylval.ID=strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_m_token;}
-{fixed_point}s		{yylval.ID=strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_s_token;}
-{fixed_point}ms		{yylval.ID=strdup(yytext); yylval.ID[yyleng-2] = '\0'; return fixed_point_ms_token;}
+{integer}d		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_d_token;}
+{integer}h		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_h_token;}
+{integer}m		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_m_token;}
+{integer}s		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return integer_s_token;}
+{integer}ms		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-2] = '\0'; return integer_ms_token;}
+{fixed_point}d		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_d_token;}
+{fixed_point}h		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_h_token;}
+{fixed_point}m		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_m_token;}
+{fixed_point}s		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-1] = '\0'; return fixed_point_s_token;}
+{fixed_point}ms		{yylval.ID=matiec::cstr_pool_strdup(yytext); yylval.ID[yyleng-2] = '\0'; return fixed_point_ms_token;}
 
 _			/* do nothing - eat it up!*/
 \#			{/*fprintf(stderr, "popping from time_literal_state (###)\n");*/ yy_pop_state(); return end_interval_token;}
@@ -1871,26 +1878,26 @@ _			/* do nothing - eat it up!*/
 	/*******************************/
 	/* B.1.2.2   Character Strings */
 	/*******************************/
-{double_byte_character_string} {yylval.ID=strdup(yytext); return double_byte_character_string_token;}
-{single_byte_character_string} {yylval.ID=strdup(yytext); return single_byte_character_string_token;}
+{double_byte_character_string} {yylval.ID=matiec::cstr_pool_strdup(yytext); return double_byte_character_string_token;}
+{single_byte_character_string} {yylval.ID=matiec::cstr_pool_strdup(yytext); return single_byte_character_string_token;}
 
 
 	/******************************/
 	/* B.1.2.1   Numeric literals */
 	/******************************/
-{integer}		{yylval.ID=strdup(yytext); return integer_token;}
-{real}			{yylval.ID=strdup(yytext); return real_token;}
-{binary_integer}	{yylval.ID=strdup(yytext); return binary_integer_token;}
-{octal_integer} 	{yylval.ID=strdup(yytext); return octal_integer_token;}
-{hex_integer} 		{yylval.ID=strdup(yytext); return hex_integer_token;}
+{integer}		{yylval.ID=matiec::cstr_pool_strdup(yytext); return integer_token;}
+{real}			{yylval.ID=matiec::cstr_pool_strdup(yytext); return real_token;}
+{binary_integer}	{yylval.ID=matiec::cstr_pool_strdup(yytext); return binary_integer_token;}
+{octal_integer} 	{yylval.ID=matiec::cstr_pool_strdup(yytext); return octal_integer_token;}
+{hex_integer} 		{yylval.ID=matiec::cstr_pool_strdup(yytext); return hex_integer_token;}
 
 
 	/*****************************************/
 	/* B.1.1 Letters, digits and identifiers */
 	/*****************************************/
-<st_state>{identifier}/({st_whitespace_or_pragma_or_comment})"=>"	{yylval.ID=strdup(yytext); return sendto_identifier_token;}
-<il_state>{identifier}/({il_whitespace_or_pragma_or_comment})"=>"	{yylval.ID=strdup(yytext); return sendto_identifier_token;}
-{identifier} 				{yylval.ID=strdup(yytext);
+<st_state>{identifier}/({st_whitespace_or_pragma_or_comment})"=>"	{yylval.ID=matiec::cstr_pool_strdup(yytext); return sendto_identifier_token;}
+<il_state>{identifier}/({il_whitespace_or_pragma_or_comment})"=>"	{yylval.ID=matiec::cstr_pool_strdup(yytext); return sendto_identifier_token;}
+{identifier} 				{yylval.ID=matiec::cstr_pool_strdup(yytext);
 					 // printf("returning identifier...: %s, %d\n", yytext, get_identifier_token(yytext));
 					 return get_identifier_token(yytext);}
 
@@ -1986,7 +1993,13 @@ void print_include_stack(void) {
 void handle_include_file_(FILE *filehandle, const char *filename) {
   if (include_stack_ptr >= MAX_INCLUDE_DEPTH) {
     fprintf(stderr, "Includes nested too deeply\n");
-    exit( 1 );
+    matiec::globalErrorReporter().report(
+        matiec::ErrorSeverity::Error,
+        matiec::ErrorCategory::IO,
+        "Includes nested too deeply");
+    ++yynerrs;
+    if (filehandle != NULL) fclose(filehandle);
+    return;
   }
   
   yyin = filehandle;
@@ -1995,7 +2008,7 @@ void handle_include_file_(FILE *filehandle, const char *filename) {
   include_stack[include_stack_ptr].env = current_tracking;
   include_stack[include_stack_ptr].filename = current_filename;
   
-  current_filename = strdup(filename);
+  current_filename = matiec::cstr_pool_strdup(filename);
   current_tracking = GetNewTracking(yyin);
   include_stack_ptr++;
 
@@ -2013,7 +2026,12 @@ void include_string_(const char *source_code) {
   
   if(tmp_file == NULL) {
     perror("Error creating temp file.");
-    exit(EXIT_FAILURE);
+    matiec::globalErrorReporter().report(
+        matiec::ErrorSeverity::Error,
+        matiec::ErrorCategory::IO,
+        "Error creating temporary file.");
+    ++yynerrs;
+    return;
   }
 
   fwrite((void *)source_code, 1, strlen(source_code), tmp_file);
@@ -2035,7 +2053,12 @@ void include_file(const char *filename) {
     full_name = strdup3(INCLUDE_DIRECTORIES[i], "/", filename);
     if (full_name == NULL) {
       fprintf(stderr, "Out of memory!\n");
-      exit( 1 );
+      matiec::globalErrorReporter().report(
+          matiec::ErrorSeverity::Fatal,
+          matiec::ErrorCategory::Internal,
+          "Out of memory while resolving include file path.");
+      ++yynerrs;
+      return;
     }
     filehandle = fopen(full_name, "r");
     free(full_name);
@@ -2043,7 +2066,12 @@ void include_file(const char *filename) {
 
   if (NULL == filehandle) {
     fprintf(stderr, "Error opening included file %s\n", filename);
-    exit( 1 );
+    matiec::globalErrorReporter().report(
+        matiec::ErrorSeverity::Error,
+        matiec::ErrorCategory::IO,
+        std::string("Error opening included file ") + filename);
+    ++yynerrs;
+    return;
   }
 
   /* now process the new file... */
@@ -2209,10 +2237,58 @@ FILE *parse_file(const char *filename) {
 
   if((filehandle = fopen(filename, "r")) != NULL) {
     yyin = filehandle;
-    current_filename = strdup(filename);
+    current_filename = matiec::cstr_pool_strdup(filename);
     current_tracking = GetNewTracking(yyin);
   }
   return filehandle;
+}
+
+/* Reset/cleanup helpers for stage1_2 (used by bison and the library API). */
+void stage1_2_lex_cleanup(void) {
+  /* If parsing aborted early, we may still have active include files/buffers. */
+  while (include_stack_ptr > 0) {
+    if (yyin != NULL) {
+      fclose(yyin);
+      yyin = NULL;
+    }
+
+    if (current_tracking != NULL) {
+      FreeTracking(current_tracking);
+      current_tracking = NULL;
+    }
+
+    yy_delete_buffer(YY_CURRENT_BUFFER);
+
+    --include_stack_ptr;
+    yy_switch_to_buffer(include_stack[include_stack_ptr].buffer_state);
+    current_tracking = include_stack[include_stack_ptr].env;
+    current_filename = include_stack[include_stack_ptr].filename;
+    yyin = (current_tracking != NULL) ? current_tracking->in_file : NULL;
+  }
+
+  if (bodystate_buffer != NULL) {
+    free(bodystate_buffer);
+    bodystate_buffer = NULL;
+    bodystate_is_whitespace = 1;
+  }
+
+  if (current_tracking != NULL) {
+    FreeTracking(current_tracking);
+    current_tracking = NULL;
+  }
+
+  yy_delete_buffer(YY_CURRENT_BUFFER);
+
+  current_filename = NULL;
+  include_stack_ptr = 0;
+
+  /* Reset flex internal globals (start-condition stack, line counters, etc.). */
+  yylex_destroy();
+}
+
+void stage1_2_lex_reset(void) {
+  stage1_2_lex_cleanup();
+  current_order = 0;
 }
 
 
