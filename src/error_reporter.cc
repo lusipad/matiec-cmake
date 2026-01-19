@@ -18,7 +18,6 @@
 #include "matiec/error.hpp"
 
 #include <cstdio>
-#include <cstdlib>
 #include <sstream>
 #include <iostream>
 
@@ -160,18 +159,17 @@ void ErrorReporter::reportTypeError(std::string message, SourceLocation location
 
 [[noreturn]] void ErrorReporter::reportInternalError(std::string message,
                                                       const char* file, int line) {
-    InternalError error(std::move(message), file, line);
+    const char* safe_file = (file != nullptr) ? file : "<unknown>";
 
-    // Print immediately
-    std::cerr << error.format() << std::endl;
+    std::ostringstream oss;
+    oss << "Internal compiler error in file " << safe_file << " at line " << line;
+    if (!message.empty()) {
+        oss << ": " << message;
+    }
 
-    // Store and mark fatal
-    has_fatal_ = true;
-    ++error_count_;
-    errors_.push_back(std::move(error));
-
-    // Abort - internal errors are unrecoverable
-    std::abort();
+    const std::string full_message = oss.str();
+    report(ErrorSeverity::Fatal, ErrorCategory::Internal, full_message);
+    throw InternalCompilerErrorException(full_message, safe_file, line);
 }
 
 void ErrorReporter::reportWarning(std::string message, std::optional<SourceLocation> location) {

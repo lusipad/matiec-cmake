@@ -282,50 +282,61 @@ MATIEC_API matiec_error_t matiec_compile_file(
     symbol_c *ordered_tree_root = nullptr;
     matiec_error_t ret = MATIEC_OK;
 
-    // Ensure stale global state from prior in-process compilations does not
-    // affect this run.
-    stage1_2_reset();
-    absyntax_utils_reset();
-    matiec::cstr_pool_clear();
+    try {
+        // Ensure stale global state from prior in-process compilations does not
+        // affect this run.
+        stage1_2_reset();
+        absyntax_utils_reset();
+        matiec::cstr_pool_clear();
 
-    /* Stage 1 & 2: Lexical and Syntax analysis */
-    if (stage1_2(const_cast<char*>(input_file), &tree_root) < 0) {
-        result_set_error_from_reporter(
-            result,
-            MATIEC_ERROR_PARSE,
-            "Parsing failed (lexical or syntax error)");
+        /* Stage 1 & 2: Lexical and Syntax analysis */
+        if (stage1_2(const_cast<char*>(input_file), &tree_root) < 0) {
+            result_set_error_from_reporter(
+                result,
+                MATIEC_ERROR_PARSE,
+                "Parsing failed (lexical or syntax error)");
+            ret = result->error_code;
+            goto cleanup;
+        }
+
+        /* Stage pre-3: Initialize symbol tables */
+        absyntax_utils_reset();
+        absyntax_utils_init(tree_root);
+
+        /* Stage 3: Semantic analysis */
+        if (stage3(tree_root, &ordered_tree_root) < 0) {
+            result_set_error_from_reporter(
+                result,
+                MATIEC_ERROR_SEMANTIC,
+                "Semantic analysis failed");
+            ret = result->error_code;
+            goto cleanup;
+        }
+
+        /* Stage 4: Code generation */
+        if (stage4(ordered_tree_root, const_cast<char*>(builddir)) < 0) {
+            result_set_error_from_reporter(
+                result,
+                MATIEC_ERROR_CODEGEN,
+                "Code generation failed");
+            ret = result->error_code;
+            goto cleanup;
+        }
+
+        ret = MATIEC_OK;
+    } catch (const matiec::InternalCompilerErrorException& ex) {
+        result_set_error_from_reporter(result, MATIEC_ERROR_INTERNAL, ex.what());
         ret = result->error_code;
-        goto cleanup;
+    } catch (const std::exception& ex) {
+        result_set_error(result, MATIEC_ERROR_INTERNAL, ex.what());
+        ret = MATIEC_ERROR_INTERNAL;
+    } catch (...) {
+        result_set_error(result, MATIEC_ERROR_INTERNAL, "Unknown internal compiler error");
+        ret = MATIEC_ERROR_INTERNAL;
     }
-
-    /* Stage pre-3: Initialize symbol tables */
-    absyntax_utils_reset();
-    absyntax_utils_init(tree_root);
-
-    /* Stage 3: Semantic analysis */
-    if (stage3(tree_root, &ordered_tree_root) < 0) {
-        result_set_error_from_reporter(
-            result,
-            MATIEC_ERROR_SEMANTIC,
-            "Semantic analysis failed");
-        ret = result->error_code;
-        goto cleanup;
-    }
-
-    /* Stage 4: Code generation */
-    if (stage4(ordered_tree_root, const_cast<char*>(builddir)) < 0) {
-        result_set_error_from_reporter(
-            result,
-            MATIEC_ERROR_CODEGEN,
-            "Code generation failed");
-        ret = result->error_code;
-        goto cleanup;
-    }
-
-    ret = MATIEC_OK;
 
 cleanup:
-    // These global tables store raw pointers into the AST; clear them before
+    // These global tables store raw pointers into the AST; clear them before   
     // freeing the compilation's AST.
     absyntax_utils_reset();
 

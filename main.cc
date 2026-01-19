@@ -72,6 +72,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <cstdio>
 #include <iostream>
 
 
@@ -82,6 +83,7 @@
 #include "stage3/stage3.hh"
 #include "stage4/stage4.hh"
 #include "main.hh"
+#include "matiec/error.hpp"
 
 
 #ifndef HGVERSION
@@ -94,17 +96,26 @@ void error_exit(const char *file_name, int line_no, const char *errmsg, ...) {
   va_list argptr;
   va_start(argptr, errmsg); /* second argument is last fixed pamater of error_exit() */
 
-  fprintf(stderr, "\nInternal compiler error in file %s at line %d", file_name, line_no);
-  if (errmsg != NULL) {
-    fprintf(stderr, ": ");
-    vfprintf(stderr, errmsg, argptr);
-  } else {
-    fprintf(stderr, ".");
+  std::string message;
+  if (errmsg != nullptr) {
+    va_list argptr_copy;
+    va_copy(argptr_copy, argptr);
+    const int required = std::vsnprintf(nullptr, 0, errmsg, argptr_copy);
+    va_end(argptr_copy);
+
+    if (required >= 0) {
+      std::vector<char> buffer(static_cast<size_t>(required) + 1);
+      std::vsnprintf(buffer.data(), buffer.size(), errmsg, argptr);
+      message.assign(buffer.data(), static_cast<size_t>(required));
+    } else {
+      message = errmsg;
+    }
   }
-  fprintf(stderr, "\n");
+
   va_end(argptr);
-    
-  exit(EXIT_FAILURE);
+
+  matiec::globalErrorReporter().reportInternalError(
+      std::move(message), file_name, line_no);
 }
 
 
@@ -239,6 +250,7 @@ int main(int argc, char **argv) {
   /***************************/
   /*   Run the compiler...   */
   /***************************/
+  try {
   /* 1st Pass */
   if (stage1_2(argv[optind], &tree_root) < 0)
     return EXIT_FAILURE;
@@ -257,11 +269,20 @@ int main(int argc, char **argv) {
   if (stage4(ordered_tree_root, builddir) < 0)
     return EXIT_FAILURE;
 
+  } catch (const matiec::InternalCompilerErrorException &ex) {
+    fprintf(stderr, "%s\n", ex.what());
+    return EXIT_FAILURE;
+  } catch (const std::exception &ex) {
+    fprintf(stderr, "Unhandled exception: %s\n", ex.what());
+    return EXIT_FAILURE;
+  } catch (...) {
+    fprintf(stderr, "Unhandled unknown exception\n");
+    return EXIT_FAILURE;
+  }
+
   /* 4th Pass */
   /* Call gcc, g++, or whatever... */
   /* Currently implemented in the Makefile! */
 
   return 0;
 }
-
-

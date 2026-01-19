@@ -27,6 +27,7 @@
 #include <optional>
 #include <functional>
 #include <memory>
+#include <stdexcept>
 #include <cstdint>
 
 namespace matiec {
@@ -333,6 +334,29 @@ private:
     int warning_count_ = 0;
     int max_errors_ = 0;  // 0 = unlimited
     bool has_fatal_ = false;
+};
+
+/**
+ * @brief Exception type thrown on internal compiler errors
+ *
+ * Internal compiler errors indicate a bug/unrecoverable state. The compiler
+ * reports the error via ErrorReporter and then throws this exception to abort
+ * the current compilation without terminating the host process (important for
+ * library usage and tests).
+ */
+class InternalCompilerErrorException final : public std::runtime_error {
+public:
+    InternalCompilerErrorException(std::string message, const char* file, int line)
+        : std::runtime_error(std::move(message)),
+          source_file_(file ? file : "<unknown>"),
+          source_line_(line) {}
+
+    [[nodiscard]] const char* sourceFile() const noexcept { return source_file_; }
+    [[nodiscard]] int sourceLine() const noexcept { return source_line_; }
+
+private:
+    const char* source_file_;
+    int source_line_;
 };
 
 /**

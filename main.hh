@@ -70,8 +70,8 @@ extern runtime_options_t runtime_options;
 /*
  * Legacy error macros - maintained for backward compatibility.
  *
- * These macros call error_exit() which prints an error message and terminates.
- * For new code, prefer using the modern error handling in <matiec/error.hpp>:
+ * These macros call error_exit() which reports an internal compiler error and throws.
+ * For new code, prefer using the modern error handling in <matiec/error.hpp>:  
  *   - MATIEC_INTERNAL_ERROR(msg) for internal errors
  *   - MATIEC_ASSERT(cond, msg) for assertions
  *   - matiec::globalErrorReporter() for collecting errors
