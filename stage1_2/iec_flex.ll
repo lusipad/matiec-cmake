@@ -126,6 +126,7 @@
 /* Required for strdup() */
 #include <string.h>
 #include <string>
+#include <new>
 
 /* Required only for the declaration of abstract syntax classes
  * (class symbol_c; class token_c; class list_c;)
@@ -2050,9 +2051,10 @@ void include_file(const char *filename) {
   FILE *filehandle = NULL;
   
   for (int i = 0; (INCLUDE_DIRECTORIES[i] != NULL) && (filehandle == NULL); i++) {
-    char *full_name;
-    full_name = strdup3(INCLUDE_DIRECTORIES[i], "/", filename);
-    if (full_name == NULL) {
+    std::string full_name;
+    try {
+      full_name = std::string(INCLUDE_DIRECTORIES[i]) + "/" + filename;
+    } catch (const std::bad_alloc&) {
       fprintf(stderr, "Out of memory!\n");
       matiec::globalErrorReporter().report(
           matiec::ErrorSeverity::Fatal,
@@ -2061,8 +2063,7 @@ void include_file(const char *filename) {
       ++yynerrs;
       return;
     }
-    filehandle = fopen(full_name, "r");
-    free(full_name);
+    filehandle = fopen(full_name.c_str(), "r");
   }
 
   if (NULL == filehandle) {
@@ -2319,9 +2320,9 @@ int main(int argc, char **argv) {
   } else {
     /* Work as non-interactive (file) parser... */
     if((in_file = fopen(argv[1], "r")) == NULL) {
-      char *errmsg = strdup2("Error opening main file ", argv[1]);
-      perror(errmsg);
-      free(errmsg);
+      std::string errmsg("Error opening main file ");
+      errmsg += argv[1];
+      perror(errmsg.c_str());
       return -1;
     }
 

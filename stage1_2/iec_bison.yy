@@ -73,6 +73,8 @@
 
 
 %{
+#include <new>
+#include <string>
 #include <string.h>	/* required for strdup()  */
 
 
@@ -8771,9 +8773,9 @@ static int parse_files(const char *libfilename, const char *filename) {
   */
   FILE *libfile = NULL;
   if((libfile = parse_file(libfilename)) == NULL) {
-    char *errmsg = strdup2("Error opening library file ", libfilename);
-    perror(errmsg);
-    free(errmsg);
+    std::string errmsg("Error opening library file ");
+    errmsg += libfilename;
+    perror(errmsg.c_str());
     /* we give up... */
     return -1;
   }
@@ -8810,9 +8812,9 @@ static int parse_files(const char *libfilename, const char *filename) {
   #endif
   FILE *mainfile = NULL;
   if ((mainfile = parse_file(filename)) == NULL) {
-    char *errmsg = strdup2("Error opening main file ", filename);
-    perror(errmsg);
-    free(errmsg);
+    std::string errmsg("Error opening main file ");
+    errmsg += filename;
+    perror(errmsg.c_str());
     return -3;
   }
 
@@ -8876,7 +8878,7 @@ static int parse_files(const char *libfilename, const char *filename) {
 int stage2__(const char *filename, 
              symbol_c **tree_root_ref
             ) {
-  char *libfilename = NULL;
+  std::string libfilename;
   int res = 0;
 
   stage1_2_lex_reset();
@@ -8887,7 +8889,9 @@ int stage2__(const char *filename,
   if (runtime_options.includedir != NULL)
     INCLUDE_DIRECTORIES[0] = runtime_options.includedir;
 
-  if ((libfilename = strdup3(INCLUDE_DIRECTORIES[0], "/", LIBFILE)) == NULL) {  
+  try {
+    libfilename = std::string(INCLUDE_DIRECTORIES[0]) + "/" + LIBFILE;
+  } catch (const std::bad_alloc&) {
     fprintf (stderr, "Out of memory. Bailing out!\n");
     matiec::globalErrorReporter().report(
         matiec::ErrorSeverity::Fatal,
@@ -8905,7 +8909,7 @@ int stage2__(const char *filename,
     stage1_2_lex_reset();
     tree_root = NULL;
     set_preparse_state();
-    res = parse_files(libfilename, filename);
+    res = parse_files(libfilename.c_str(), filename);
     if (res < 0) {
       goto cleanup;
     }
@@ -8922,7 +8926,7 @@ int stage2__(const char *filename,
   stage1_2_lex_reset();
   tree_root = NULL;
   rst_preparse_state();
-  res = parse_files(libfilename, filename);
+  res = parse_files(libfilename.c_str(), filename);
   if (res < 0) {
     goto cleanup;
   }
@@ -8932,17 +8936,9 @@ int stage2__(const char *filename,
   res = 0;
 
 cleanup:
-  if (libfilename != NULL) {
-    free(libfilename);
-    libfilename = NULL;
-  }
   if (tree_root_ref != NULL)
     *tree_root_ref = tree_root;
 
   stage1_2_lex_cleanup();
   return res;
 }
-
-
-
-

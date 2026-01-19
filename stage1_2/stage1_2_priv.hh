@@ -243,21 +243,3 @@ int get_identifier_token(const char *identifier_str);
  * symbol found.
  */
 int get_direct_variable_token(const char *direct_variable_str);
-
-
-/*************************************************************/
-/*************************************************************/
-/****                                                    *****/
-/****  U t i l i t y   F u n c t i o n s ...             *****/
-/****                                                    *****/
-/****                                                    *****/
-/*************************************************************/
-/*************************************************************/
-
-/* Join two strings together. Allocate space with malloc(3). */
-char *strdup2(const char *a, const char *b);
-
-/* Join three strings together. Allocate space with malloc(3). */
-char *strdup3(const char *a, const char *b, const char *c);
-
-
