@@ -287,3 +287,10 @@ void absyntax_utils_init(symbol_c *tree_root) {
   tree_root->accept(populate_symbols);
 }
 
+void absyntax_utils_reset(void) {
+  function_symtable.reset();
+
+  while (function_block_type_symtable.pop() == 0) {}
+  while (program_type_symtable.pop() == 0) {}
+  while (type_symtable.pop() == 0) {}
+}

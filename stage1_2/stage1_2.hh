@@ -47,6 +47,9 @@
 
 int stage1_2(const char *filename, symbol_c **tree_root);
 
+/* Reset per-compilation global state (symbol tables, parser/scanner flags). */
+void stage1_2_reset(void);
+
 
 
 

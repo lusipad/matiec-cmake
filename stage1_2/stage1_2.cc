@@ -234,6 +234,22 @@ int stage2__(const char *filename,
              symbol_c **tree_root_ref
             );
 
+void stage1_2_reset(void) {
+  /* These tables are used by the lexer to disambiguate identifiers. They must
+   * not retain values across independent compilation runs in-process. */
+  library_element_symtable.clear();
+  variable_name_symtable.clear();
+  direct_variable_symtable.clear();
+
+  /* Reset flex/bison coordination flags. */
+  rst_preparse_state();
+  rst_goto_body_state();
+  rst_goto_sfc_qualifier_state();
+  rst_goto_sfc_priority_state();
+  rst_goto_task_init_state();
+  rst_pop_state();
+}
+
 
 int stage1_2(const char *filename, symbol_c **tree_root_ref) {
       /* NOTE: we only call stage2 (bison - syntax analysis) directly, as stage 2 will itself call stage1 (flex - lexical analysis)
@@ -246,6 +262,6 @@ int stage1_2(const char *filename, symbol_c **tree_root_ref) {
        *       These callback functions will get their data from local (to this file) global variables...
        *       We now set those variables...
        */
+  stage1_2_reset();
   return stage2__(filename, tree_root_ref);
 }
-

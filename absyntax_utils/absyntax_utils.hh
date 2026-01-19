@@ -113,5 +113,10 @@ extern  type_symtable_t type_symtable;
 
 void absyntax_utils_init(symbol_c *tree_root);
 
+/* Clear global symbol tables populated by absyntax_utils_init(). These tables
+ * store raw pointers into the AST and must be reset between independent
+ * compilation runs when embedding matiec as a library. */
+void absyntax_utils_reset(void);
+
 
 #endif /* _SEARCH_UTILS_HH */
