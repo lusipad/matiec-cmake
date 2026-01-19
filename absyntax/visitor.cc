@@ -100,7 +100,6 @@ null_visitor_c::~null_visitor_c(void) {return;}
   void *null_visitor_c::visit(class_name_c *symbol) {return NULL;}
 
 
-#include "absyntax.def"
 
 
 
@@ -142,7 +141,6 @@ null_visitor_c::~null_visitor_c(void) {return;}
 #define SYM_REF5(class_name_c, ref1, ref2, ref3, ref4, ref5, ...)               void *fcall_visitor_c::visit(class_name_c *symbol) VISIT_METHOD;
 #define SYM_REF6(class_name_c, ref1, ref2, ref3, ref4, ref5, ref6, ...)         void *fcall_visitor_c::visit(class_name_c *symbol) VISIT_METHOD;
 
-#include "../absyntax/absyntax.def"
 
 #undef VISIT_METHOD
 
@@ -238,7 +236,6 @@ void *iterator_visitor_c::visit(class_name_c *symbol) {			\
 
 
 
-#include "absyntax.def"
 
 
 
@@ -282,7 +279,6 @@ void fcall_iterator_visitor_c::suffix_fcall(symbol_c *symbol) {return;};
 #define SYM_REF5(class_name_c, ref1, ref2, ref3, ref4, ref5, ...)               void *fcall_iterator_visitor_c::visit(class_name_c *symbol) VISIT_METHOD;
 #define SYM_REF6(class_name_c, ref1, ref2, ref3, ref4, ref5, ref6, ...)         void *fcall_iterator_visitor_c::visit(class_name_c *symbol) VISIT_METHOD;
 
-#include "../absyntax/absyntax.def"
 
 #undef VISIT_METHOD
 
@@ -402,7 +398,6 @@ void *search_visitor_c::visit(class_name_c *symbol) {			\
 
 
 
-#include "absyntax.def"
 
 
 
@@ -415,7 +410,6 @@ void *search_visitor_c::visit(class_name_c *symbol) {			\
 #undef SYM_REF4
 #undef SYM_REF5
 #undef SYM_REF6
-
 
 
 

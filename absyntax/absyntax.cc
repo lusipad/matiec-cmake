@@ -374,23 +374,3 @@ class_name_c::class_name_c(symbol_c *ref1,							\
 void *class_name_c::accept(visitor_c &visitor) {return visitor.visit(this);}
 
 
-
-#include "absyntax.def"
-
-
-
-
-#undef SYM_LIST
-#undef SYM_TOKEN
-#undef SYM_TOKEN
-#undef SYM_REF0
-#undef SYM_REF1
-#undef SYM_REF2
-#undef SYM_REF3
-#undef SYM_REF4
-#undef SYM_REF5
-#undef SYM_REF6
-
-
-
-

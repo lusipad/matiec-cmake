@@ -3,6 +3,8 @@ add_library(absyntax STATIC
     absyntax.cc
     ast_memory.cc
     visitor.cc
+    generated/absyntax_nodes.gen.cc
+    generated/visitor_methods.gen.cc
 )
 
 target_include_directories(absyntax PUBLIC

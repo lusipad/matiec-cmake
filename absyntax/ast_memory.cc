@@ -78,7 +78,7 @@ public:
 #define SYM_REF6(class_name_c, ref1, ref2, ref3, ref4, ref5, ref6, ...) \
     void* visit(class_name_c* symbol) override { push(symbol->ref1); push(symbol->ref2); push(symbol->ref3); push(symbol->ref4); push(symbol->ref5); push(symbol->ref6); return nullptr; }
 
-#include "absyntax.def"
+#include "generated/ast_child_pusher_visitor_methods.gen.inc"
 
 #undef SYM_LIST
 #undef SYM_TOKEN
@@ -224,4 +224,3 @@ void ast_delete(symbol_c* root1, symbol_c* root2) noexcept {
 }
 
 } // namespace matiec
-

@@ -543,7 +543,7 @@ class class_name_c: public symbol_c {											\
 };
 
 
-#include "absyntax.def"
+#include "generated/absyntax_nodes.gen.hh"
 
 
 
