@@ -45,6 +45,8 @@
 
 #include "print_datatypes_error.hh"
 #include "datatype_functions.hh"
+#include <cstdio>
+#include "matiec/error.hpp"
 
 #include <typeinfo>
 #include <list>
@@ -86,6 +88,53 @@
     warning_found = true;                                                                                                   \
 }  
 
+
+#undef STAGE3_ERROR
+#undef STAGE3_WARNING
+
+// Override legacy stage3 diagnostics to also feed the modern ErrorReporter.
+#define STAGE3_ERROR(error_level, symbol1, symbol2, ...) do { \
+  if (current_display_error_level >= (error_level)) { \
+    char _matiec_msg[1024]; \
+    std::snprintf(_matiec_msg, sizeof(_matiec_msg), __VA_ARGS__); \
+    matiec::SourceLocation _matiec_loc; \
+    _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
+    _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
+    _matiec_loc.column = FIRST_(symbol1, symbol2)->first_column; \
+    matiec::globalErrorReporter().report( \
+        matiec::ErrorSeverity::Error, \
+        matiec::ErrorCategory::Type, \
+        _matiec_msg, \
+        _matiec_loc.isValid() ? std::optional<matiec::SourceLocation>(_matiec_loc) : std::nullopt); \
+    fprintf(stderr, "%s:%d-%d..%d-%d: error: ", \
+            FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
+            LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
+    fprintf(stderr, __VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+    il_error = true; \
+    error_count++; \
+  } \
+} while (0)
+
+#define STAGE3_WARNING(symbol1, symbol2, ...) do { \
+  char _matiec_msg[1024]; \
+  std::snprintf(_matiec_msg, sizeof(_matiec_msg), __VA_ARGS__); \
+  matiec::SourceLocation _matiec_loc; \
+  _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
+  _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
+  _matiec_loc.column = FIRST_(symbol1, symbol2)->first_column; \
+  matiec::globalErrorReporter().report( \
+      matiec::ErrorSeverity::Warning, \
+      matiec::ErrorCategory::Type, \
+      _matiec_msg, \
+      _matiec_loc.isValid() ? std::optional<matiec::SourceLocation>(_matiec_loc) : std::nullopt); \
+  fprintf(stderr, "%s:%d-%d..%d-%d: warning: ", \
+          FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
+          LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
+  fprintf(stderr, __VA_ARGS__); \
+  fprintf(stderr, "\n"); \
+  warning_found = true; \
+} while (0)
 
 /* set to 1 to see debug info during execution */
 static int debug = 0;
@@ -1299,7 +1348,6 @@ void *print_datatypes_error_c::visit(repeat_statement_c *symbol) {
 	symbol->expression->accept(*this);
 	return NULL;
 }
-
 
 
 

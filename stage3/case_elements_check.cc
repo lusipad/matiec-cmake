@@ -44,6 +44,8 @@
 
 
 #include "case_elements_check.hh"
+#include <cstdio>
+#include "matiec/error.hpp"
 
 
 #define FIRST_(symbol1, symbol2) (((symbol1)->first_order < (symbol2)->first_order)   ? (symbol1) : (symbol2))
@@ -70,6 +72,52 @@
     warning_found = true;                                                                                                   \
 }
 
+
+#undef STAGE3_ERROR
+#undef STAGE3_WARNING
+
+// Override legacy stage3 diagnostics to also feed the modern ErrorReporter.
+#define STAGE3_ERROR(error_level, symbol1, symbol2, ...) do { \
+  if (current_display_error_level >= (error_level)) { \
+    char _matiec_msg[1024]; \
+    std::snprintf(_matiec_msg, sizeof(_matiec_msg), __VA_ARGS__); \
+    matiec::SourceLocation _matiec_loc; \
+    _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
+    _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
+    _matiec_loc.column = FIRST_(symbol1, symbol2)->first_column; \
+    matiec::globalErrorReporter().report( \
+        matiec::ErrorSeverity::Error, \
+        matiec::ErrorCategory::Semantic, \
+        _matiec_msg, \
+        _matiec_loc.isValid() ? std::optional<matiec::SourceLocation>(_matiec_loc) : std::nullopt); \
+    fprintf(stderr, "%s:%d-%d..%d-%d: error: ", \
+            FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
+            LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
+    fprintf(stderr, __VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+    error_count++; \
+  } \
+} while (0)
+
+#define STAGE3_WARNING(symbol1, symbol2, ...) do { \
+  char _matiec_msg[1024]; \
+  std::snprintf(_matiec_msg, sizeof(_matiec_msg), __VA_ARGS__); \
+  matiec::SourceLocation _matiec_loc; \
+  _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
+  _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
+  _matiec_loc.column = FIRST_(symbol1, symbol2)->first_column; \
+  matiec::globalErrorReporter().report( \
+      matiec::ErrorSeverity::Warning, \
+      matiec::ErrorCategory::Semantic, \
+      _matiec_msg, \
+      _matiec_loc.isValid() ? std::optional<matiec::SourceLocation>(_matiec_loc) : std::nullopt); \
+  fprintf(stderr, "%s:%d-%d..%d-%d: warning: ", \
+          FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
+          LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
+  fprintf(stderr, __VA_ARGS__); \
+  fprintf(stderr, "\n"); \
+  warning_found = true; \
+} while (0)
 
 #define GET_CVALUE(dtype, symbol)             ((symbol)->const_value.m_##dtype.get())
 #define VALID_CVALUE(dtype, symbol)           ((symbol)->const_value.m_##dtype.is_valid())
@@ -245,5 +293,3 @@ void *case_elements_check_c::visit(case_list_c *symbol) {
     case_elements_list.push_back(symbol->get_element(i));
   return NULL;
 }
-
-

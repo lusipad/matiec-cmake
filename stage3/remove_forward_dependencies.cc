@@ -47,6 +47,8 @@
 #include "remove_forward_dependencies.hh"
 #include "../main.hh" // required for ERROR() and ERROR_MSG() macros.
 #include "../absyntax_utils/absyntax_utils.hh"
+#include <cstdio>
+#include "matiec/error.hpp"
 
 
 
@@ -80,6 +82,52 @@
 }
 
 
+
+#undef STAGE3_ERROR
+#undef STAGE3_WARNING
+
+// Override legacy stage3 diagnostics to also feed the modern ErrorReporter.
+#define STAGE3_ERROR(error_level, symbol1, symbol2, ...) do { \
+  if (current_display_error_level >= (error_level)) { \
+    char _matiec_msg[1024]; \
+    std::snprintf(_matiec_msg, sizeof(_matiec_msg), __VA_ARGS__); \
+    matiec::SourceLocation _matiec_loc; \
+    _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
+    _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
+    _matiec_loc.column = FIRST_(symbol1, symbol2)->first_column; \
+    matiec::globalErrorReporter().report( \
+        matiec::ErrorSeverity::Error, \
+        matiec::ErrorCategory::Semantic, \
+        _matiec_msg, \
+        _matiec_loc.isValid() ? std::optional<matiec::SourceLocation>(_matiec_loc) : std::nullopt); \
+    fprintf(stderr, "%s:%d-%d..%d-%d: error: ", \
+            FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
+            LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
+    fprintf(stderr, __VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+    error_count++; \
+  } \
+} while (0)
+
+#define STAGE3_WARNING(symbol1, symbol2, ...) do { \
+  char _matiec_msg[1024]; \
+  std::snprintf(_matiec_msg, sizeof(_matiec_msg), __VA_ARGS__); \
+  matiec::SourceLocation _matiec_loc; \
+  _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
+  _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
+  _matiec_loc.column = FIRST_(symbol1, symbol2)->first_column; \
+  matiec::globalErrorReporter().report( \
+      matiec::ErrorSeverity::Warning, \
+      matiec::ErrorCategory::Semantic, \
+      _matiec_msg, \
+      _matiec_loc.isValid() ? std::optional<matiec::SourceLocation>(_matiec_loc) : std::nullopt); \
+  fprintf(stderr, "%s:%d-%d..%d-%d: warning: ", \
+          FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
+          LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
+  fprintf(stderr, __VA_ARGS__); \
+  fprintf(stderr, "\n"); \
+  warning_found = true; \
+} while (0)
 
 /* NOTE: We create an independent visitor for this task instead of having this done by the remove_forward_dependencies_c
  *       because we do not want to handle the ***_pragma_c classes while doing this search.
@@ -297,7 +345,6 @@ void *remove_forward_dependencies_c::visit(pragma_c *symbol) {
   new_tree->add_element(symbol);
   return NULL;
 }
-
 
 
 
