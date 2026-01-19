@@ -370,28 +370,20 @@ class generate_var_list_c: protected generate_c_base_and_typeid_c {
     }
 
     void print_var_number(void) {
-      char str[10];
-      sprintf(str, "%d", current_var_number);
-      s4o.print(str);
+      s4o.print(current_var_number);
       current_var_number++;
     }
-        
+
     void print_step_number(void) {
-      char str[10];
-      sprintf(str, "%d", step_number);
-      s4o.print(str);
+      s4o.print(step_number);
     }
-    
+
     void print_transition_number(void) {
-      char str[10];
-      sprintf(str, "%d", transition_number);
-      s4o.print(str);
+      s4o.print(transition_number);
     }
-    
+
     void print_action_number(void) {
-      char str[10];
-      sprintf(str, "%d", action_number);
-      s4o.print(str);
+      s4o.print(action_number);
     }
     
     void print_symbol_list() {
