@@ -44,6 +44,7 @@
 #include "enum_declaration_check.hh"
 #include <cstdio>
 #include "matiec/error.hpp"
+#include "matiec/format.hpp"
 
 
 
@@ -84,8 +85,7 @@
 // Override legacy stage3 diagnostics to also feed the modern ErrorReporter.
 #define STAGE3_ERROR(error_level, symbol1, symbol2, ...) do { \
   if (current_display_error_level >= (error_level)) { \
-    char _matiec_msg[1024]; \
-    std::snprintf(_matiec_msg, sizeof(_matiec_msg), __VA_ARGS__); \
+    std::string _matiec_msg = matiec::format(__VA_ARGS__); \
     matiec::SourceLocation _matiec_loc; \
     _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
     _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
@@ -98,15 +98,13 @@
     fprintf(stderr, "%s:%d-%d..%d-%d: error: ", \
             FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
             LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
-    fprintf(stderr, __VA_ARGS__); \
-    fprintf(stderr, "\n"); \
+    fprintf(stderr, "%s\n", _matiec_msg.c_str()); \
     error_count++; \
   } \
 } while (0)
 
 #define STAGE3_WARNING(symbol1, symbol2, ...) do { \
-  char _matiec_msg[1024]; \
-  std::snprintf(_matiec_msg, sizeof(_matiec_msg), __VA_ARGS__); \
+  std::string _matiec_msg = matiec::format(__VA_ARGS__); \
   matiec::SourceLocation _matiec_loc; \
   _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
   _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
@@ -119,8 +117,7 @@
   fprintf(stderr, "%s:%d-%d..%d-%d: warning: ", \
           FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
           LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
-  fprintf(stderr, __VA_ARGS__); \
-  fprintf(stderr, "\n"); \
+  fprintf(stderr, "%s\n", _matiec_msg.c_str()); \
   warning_found = true; \
 } while (0)
 

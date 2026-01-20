@@ -104,20 +104,17 @@ class generate_datatypes_aliasid_c: fcall_visitor_c {
     void fcall(symbol_c *symbol) {ERROR;} 
 
     static identifier_c *create_id(symbol_c *symbol) {
-      if (NULL == singleton_) singleton_ = new generate_datatypes_aliasid_c();
+      if (NULL == singleton_) singleton_ = new generate_datatypes_aliasid_c();  
       if (NULL == singleton_) ERROR;
       singleton_->current_array_name = "";
       symbol->accept(*singleton_);
       const char *str1 = singleton_->current_array_name.c_str();
-      char       *str2 = (char *)malloc(strlen(str1)+1);
-      if (NULL == str2) ERROR;
-      strcpy(str2, str1);
-      identifier_c *id = new identifier_c(str2);
+      identifier_c *id = new identifier_c(str1);
       /* Copy all the anotations in the symbol_c object 'symbol' to the newly created 'id' object
        *   This includes the location (in the IEC 61131-3 source file) annotations set in stage1_2,
        *   the symbol->datatype set in stage3, and any other anotaions that may be created in the future!
        */
-      *(dynamic_cast<symbol_c *>(id)) = *(dynamic_cast<symbol_c *>(symbol));
+      *(dynamic_cast<symbol_c *>(id)) = *(dynamic_cast<symbol_c *>(symbol));    
       return id;
     }
     
@@ -1164,7 +1161,6 @@ class generate_c_implicit_typedecl_c: public iterator_visitor_c {
       return NULL;
     }
 };
-
 
 
 

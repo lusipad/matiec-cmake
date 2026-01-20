@@ -53,6 +53,7 @@
 #include "stage4.hh"
 #include "../main.hh" // required for ERROR() and ERROR_MSG() macros.
 #include "matiec/error.hpp"
+#include "matiec/format.hpp"
 
 
 
@@ -67,11 +68,9 @@ void stage4err(const char *stage4_generator_id, symbol_c *symbol1, symbol_c *sym
 
     /* Bridge to ErrorReporter (for library/C API consumers). */
     {
-      char msg_buf[2048];
-      msg_buf[0] = '\0';
       va_list argptr_copy;
       va_copy(argptr_copy, argptr);
-      std::vsnprintf(msg_buf, sizeof(msg_buf), errmsg, argptr_copy);
+      std::string msg = matiec::vformat(errmsg, argptr_copy);
       va_end(argptr_copy);
 
       std::optional<matiec::SourceLocation> loc = std::nullopt;
@@ -87,9 +86,9 @@ void stage4err(const char *stage4_generator_id, symbol_c *symbol1, symbol_c *sym
 
       std::string full_msg;
       if (stage4_generator_id != NULL) {
-        full_msg = std::string(stage4_generator_id) + ": " + msg_buf;
+        full_msg = std::string(stage4_generator_id) + ": " + msg;
       } else {
-        full_msg = msg_buf;
+        full_msg = std::move(msg);
       }
 
       matiec::globalErrorReporter().report(
