@@ -51,11 +51,7 @@
 #include "spec_init_separator.hh"  /* no longer required, aready included by absyntax_utils.hh */
 #include <stdlib.h>  /* required for strtol() */
 #include <string.h>
-#ifdef _WIN32
-#include <string.h>
-#else
-#include <strings.h>
-#endif
+#include "matiec/string_utils.hpp"
 #include <limits> // required for std::numeric_limits< XXX >::max()
 #include <errno.h> // required for errno
 #include "../main.hh" // required for ERROR() and ERROR_MSG() macros.
@@ -154,7 +150,7 @@ int function_param_iterator_c::cmp_extparam_names(const char* s1, const char* s2
   if ((s1 == NULL) || (s2 == NULL) || (*s1 == '\0') || (*s2 == '\0')) return -1;
 
   len = strlen(s1);
-  if (strncasecmp(s1, s2, len)) return -2;
+  if (!matiec::istarts_with(s2, s1)) return -2;
 
   s1 = &s2[len];
   if (*s1 == '\0') return -3;
@@ -190,7 +186,7 @@ void* function_param_iterator_c::handle_param_list(list_c *list) {
         if (variable_name == NULL) ERROR;
         
         if (!current_param_is_extensible)
-          if (strcasecmp(search_param_name->value, variable_name->value) == 0)
+          if (matiec::iequals(search_param_name->value.c_str(), variable_name->value.c_str()))
             /* FOUND! This is the same parameter!! */
             return (void *)variable_name;
   
@@ -227,7 +223,7 @@ void* function_param_iterator_c::handle_single_param(symbol_c *var_name) {
       if (variable_name == NULL) ERROR;
       
       if (!current_param_is_extensible)
-        if (strcasecmp(search_param_name->value, variable_name->value) == 0)
+        if (matiec::iequals(search_param_name->value.c_str(), variable_name->value.c_str()))
           /* FOUND! This is the same parameter!! */
           return (void *)variable_name;
 
@@ -687,7 +683,6 @@ void *function_param_iterator_c::visit(program_declaration_c *symbol) {TRACE("pr
 /*
  * NOTE: we re-use the var_declarations_list_c
  */
-
 
 
 

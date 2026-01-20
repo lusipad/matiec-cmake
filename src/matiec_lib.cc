@@ -17,6 +17,7 @@
 
 #include "matiec/matiec.h"
 #include "matiec/error.hpp"
+#include "matiec/string_utils.hpp"
 #include "config/config.h"
 #include "absyntax/absyntax.hh"
 #include "absyntax_utils/absyntax_utils.hh"
@@ -491,14 +492,10 @@ MATIEC_API bool matiec_is_supported_extension(const char *extension) {
     }
 
     /* Supported extensions (case-insensitive) */
-    const char *supported[] = {"st", "il", "sfc", "iec", nullptr};
+    const char *supported[] = {"st", "il", "sfc", "iec", nullptr};        
 
     for (int i = 0; supported[i] != nullptr; i++) {
-#ifdef _WIN32
-        if (_stricmp(extension, supported[i]) == 0) return true;
-#else
-        if (strcasecmp(extension, supported[i]) == 0) return true;
-#endif
+        if (matiec::iequals(extension, supported[i])) return true;
     }
 
     return false;

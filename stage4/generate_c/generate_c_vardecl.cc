@@ -23,6 +23,7 @@
  */
 
 #include <limits>  // required for std::numeric_limits<XXX>
+#include "matiec/string_utils.hpp"
 
 class initialization_analyzer_c: public null_visitor_c {
   public:
@@ -485,7 +486,7 @@ class structure_init_element_iterator_c : public null_visitor_c {
       
       if (element_name == NULL) ERROR;
       
-      if (strcasecmp(search_element_name->value, element_name->value) == 0)
+      if (matiec::iequals(search_element_name->value.c_str(), element_name->value.c_str()))
         /* FOUND! This is the same element!! */
         return (void *)symbol->value;
       return NULL;
@@ -2820,6 +2821,5 @@ SYM_REF2(fb_initialization_c, function_block_type_name, structure_initialization
 
 
 }; /* generate_c_vardecl_c */
-
 
 

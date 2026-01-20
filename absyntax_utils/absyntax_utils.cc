@@ -49,11 +49,7 @@
 #include <sstream>
 #include <typeinfo>
 #include <list>
-#ifdef _WIN32
-#include <string.h>
-#else
-#include <strings.h>
-#endif
+#include "matiec/string_utils.hpp"
 // #include <string.h>  /* required for strlen() */
 // #include <stdlib.h>  /* required for atoi() */
 // #include <errno.h>   /* required for errno */
@@ -91,7 +87,7 @@ int compare_identifiers(symbol_c *ident1, symbol_c *ident2) {
     /* invalid identifiers... */
     return -1;
 
-  if (strcasecmp(name1->value, name2->value) == 0)
+  if (matiec::iequals(name1->value.c_str(), name2->value.c_str()))
     return 0;
 
   /* identifiers do not match! */

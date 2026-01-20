@@ -47,11 +47,7 @@
 
 
 #include "function_call_param_iterator.hh"
-#ifdef _WIN32
-#include <string.h>
-#else
-#include <strings.h>
-#endif
+#include "matiec/string_utils.hpp"
 #include "../main.hh" // required for ERROR() and ERROR_MSG() macros.
 
 
@@ -138,7 +134,7 @@ void *function_call_param_iterator_c::handle_parameter_assignment(symbol_c *vari
 
       if (variable_name2 == NULL) ERROR;
 
-      if (strcasecmp(search_param_name->value, variable_name2->value) == 0)
+      if (matiec::iequals(search_param_name->value.c_str(), variable_name2->value.c_str()))
         /* FOUND! This is the same parameter!! */
         return (void *)expression;
       return NULL;
@@ -598,5 +594,4 @@ void *function_call_param_iterator_c::visit(output_variable_param_assignment_c *
 /* helper CLASS for output_variable_param_assignment */
 // SYM_REF0(not_paramassign_c)
 // TODO... ???
-
 
