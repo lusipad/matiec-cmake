@@ -53,9 +53,6 @@ static char* matiec_strdup(const char* s) {
 static matiec_error_callback_t g_error_callback = nullptr;
 static void *g_error_user_data = nullptr;
 
-/* Temporary file for string compilation */
-static std::string g_temp_file_path;
-
 namespace {
 // Owns the compilation AST roots and cleans up global per-compilation state.
 // The compiler pipeline still uses raw pointers, but we use RAII at the API
@@ -98,6 +95,30 @@ public:
 
 private:
     std::unique_ptr<symbol_c, ast_roots_deleter> tree_root_{nullptr, ast_roots_deleter{nullptr}};
+};
+
+struct c_file_closer {
+    void operator()(FILE* f) const noexcept {
+        if (f) {
+            fclose(f);
+        }
+    }
+};
+
+struct temp_file_guard {
+    std::string path;
+
+    temp_file_guard() = default;
+    explicit temp_file_guard(std::string p) : path(std::move(p)) {}
+
+    temp_file_guard(const temp_file_guard&) = delete;
+    temp_file_guard& operator=(const temp_file_guard&) = delete;
+
+    ~temp_file_guard() noexcept {
+        if (!path.empty()) {
+            std::remove(path.c_str());
+        }
+    }
 };
 } // namespace
 
@@ -425,14 +446,22 @@ MATIEC_API matiec_error_t matiec_compile_string(
     }
 
     /* Create temporary file */
-    const char *name = source_name ? source_name : "input.st";
+    (void)source_name; // reserved for future "virtual filename" support
+    std::string temp_file_path;
 
 #ifdef _WIN32
     char temp_path[MAX_PATH];
     char temp_file[MAX_PATH];
-    GetTempPathA(MAX_PATH, temp_path);
-    GetTempFileNameA(temp_path, "iec", 0, temp_file);
-    g_temp_file_path = temp_file;
+    DWORD temp_path_len = GetTempPathA(MAX_PATH, temp_path);
+    if (temp_path_len == 0 || temp_path_len > MAX_PATH) {
+        result_set_error(result, MATIEC_ERROR_IO, "Failed to get temporary directory");
+        return MATIEC_ERROR_IO;
+    }
+    if (GetTempFileNameA(temp_path, "iec", 0, temp_file) == 0) {
+        result_set_error(result, MATIEC_ERROR_IO, "Failed to create temporary file name");
+        return MATIEC_ERROR_IO;
+    }
+    temp_file_path = temp_file;
 #else
     char temp_template[] = "/tmp/matiec_XXXXXX.st";
     int fd = mkstemps(temp_template, 3);
@@ -441,24 +470,24 @@ MATIEC_API matiec_error_t matiec_compile_string(
         return MATIEC_ERROR_IO;
     }
     close(fd);
-    g_temp_file_path = temp_template;
+    temp_file_path = temp_template;
 #endif
 
     /* Write source to temp file */
-    FILE *f = fopen(g_temp_file_path.c_str(), "w");
+    temp_file_guard temp_guard{temp_file_path};
+    std::unique_ptr<FILE, c_file_closer> f(std::fopen(temp_file_path.c_str(), "wb"));
     if (!f) {
         result_set_error(result, MATIEC_ERROR_IO, "Failed to write temporary file");
         return MATIEC_ERROR_IO;
     }
-    fwrite(source, 1, source_len, f);
-    fclose(f);
+    if (std::fwrite(source, 1, source_len, f.get()) != source_len) {
+        result_set_error(result, MATIEC_ERROR_IO, "Failed to write temporary file");
+        return MATIEC_ERROR_IO;
+    }
+    f.reset(); // close before compiling
 
     /* Compile the temp file */
-    matiec_error_t ret = matiec_compile_file(g_temp_file_path.c_str(), opts, result);
-
-    /* Clean up temp file */
-    remove(g_temp_file_path.c_str());
-
+    matiec_error_t ret = matiec_compile_file(temp_file_path.c_str(), opts, result);
     return ret;
 }
 
