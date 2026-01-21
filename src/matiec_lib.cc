@@ -29,6 +29,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -54,6 +55,51 @@ static void *g_error_user_data = nullptr;
 
 /* Temporary file for string compilation */
 static std::string g_temp_file_path;
+
+namespace {
+// Owns the compilation AST roots and cleans up global per-compilation state.
+// The compiler pipeline still uses raw pointers, but we use RAII at the API
+// boundary to guarantee cleanup on all exit paths (including exceptions).
+struct ast_roots_deleter {
+    symbol_c* ordered_root = nullptr;
+
+    void operator()(symbol_c* tree_root) const noexcept {
+        matiec::ast_delete(tree_root, ordered_root);
+    }
+};
+
+class compilation_cleanup_guard final {
+public:
+    compilation_cleanup_guard() = default;
+    compilation_cleanup_guard(const compilation_cleanup_guard&) = delete;
+    compilation_cleanup_guard& operator=(const compilation_cleanup_guard&) = delete;
+
+    ~compilation_cleanup_guard() noexcept {
+        // These global tables store raw pointers into the AST; clear them before
+        // freeing the compilation's AST.
+        absyntax_utils_reset();
+
+        // Always run ast_delete(), even if we never got a root pointer back,
+        // so any heap-tracked symbols are released.
+        const auto deleter = tree_root_.get_deleter();
+        symbol_c* root = tree_root_.release();
+        deleter(root);
+
+        // Release lexer-owned strings used by tokens/filenames.
+        matiec::cstr_pool_clear();
+
+        // Clear stage1_2 lexer/parser symbol tables and flags for the next run.
+        stage1_2_reset();
+    }
+
+    std::unique_ptr<symbol_c, ast_roots_deleter>& tree_root_owner() noexcept {
+        return tree_root_;
+    }
+
+private:
+    std::unique_ptr<symbol_c, ast_roots_deleter> tree_root_{nullptr, ast_roots_deleter{nullptr}};
+};
+} // namespace
 
 extern "C" {
 
@@ -292,6 +338,9 @@ MATIEC_API matiec_error_t matiec_compile_file(
     symbol_c *ordered_tree_root = nullptr;
     matiec_error_t ret = MATIEC_OK;
 
+    // Ensure cleanup happens even on early returns/exceptions.
+    compilation_cleanup_guard cleanup;
+
     try {
         // Ensure stale global state from prior in-process compilations does not
         // affect this run.
@@ -300,14 +349,16 @@ MATIEC_API matiec_error_t matiec_compile_file(
         matiec::cstr_pool_clear();
 
         /* Stage 1 & 2: Lexical and Syntax analysis */
-        if (stage1_2(const_cast<char*>(input_file), &tree_root) < 0) {
+        if (stage1_2(const_cast<char*>(input_file), &tree_root) < 0) {    
             result_set_error_from_reporter(
                 result,
                 MATIEC_ERROR_PARSE,
                 "Parsing failed (lexical or syntax error)");
             ret = result->error_code;
-            goto cleanup;
+            cleanup.tree_root_owner().reset(tree_root);
+            return ret;
         }
+        cleanup.tree_root_owner().reset(tree_root);
 
         /* Stage pre-3: Initialize symbol tables */
         absyntax_utils_reset();
@@ -315,22 +366,24 @@ MATIEC_API matiec_error_t matiec_compile_file(
 
         /* Stage 3: Semantic analysis */
         if (stage3(tree_root, &ordered_tree_root) < 0) {
+            cleanup.tree_root_owner().get_deleter().ordered_root = ordered_tree_root;
             result_set_error_from_reporter(
                 result,
                 MATIEC_ERROR_SEMANTIC,
                 "Semantic analysis failed");
             ret = result->error_code;
-            goto cleanup;
+            return ret;
         }
+        cleanup.tree_root_owner().get_deleter().ordered_root = ordered_tree_root;
 
         /* Stage 4: Code generation */
-        if (stage4(ordered_tree_root, const_cast<char*>(builddir)) < 0) {
+        if (stage4(ordered_tree_root, const_cast<char*>(builddir)) < 0) { 
             result_set_error_from_reporter(
                 result,
                 MATIEC_ERROR_CODEGEN,
                 "Code generation failed");
             ret = result->error_code;
-            goto cleanup;
+            return ret;
         }
 
         ret = MATIEC_OK;
@@ -344,19 +397,6 @@ MATIEC_API matiec_error_t matiec_compile_file(
         result_set_error(result, MATIEC_ERROR_INTERNAL, "Unknown internal compiler error");
         ret = MATIEC_ERROR_INTERNAL;
     }
-
-cleanup:
-    // These global tables store raw pointers into the AST; clear them before   
-    // freeing the compilation's AST.
-    absyntax_utils_reset();
-
-    // Free the AST (including any reordered wrapper produced by stage3) and
-    // then release lexer-owned strings used by tokens/filenames.
-    matiec::ast_delete(tree_root, ordered_tree_root);
-    matiec::cstr_pool_clear();
-
-    // Clear stage1_2 lexer/parser symbol tables and flags for the next run.
-    stage1_2_reset();
 
     return ret;
 }
