@@ -34,6 +34,8 @@
 
 #include "matiec/matiec.h"
 #include "matiec/error.hpp"
+#include "matiec/c_file.hpp"
+#include "matiec/scope_exit.hpp"
 #include "matiec/string_utils.hpp"
 #include "config/config.h"
 #include "absyntax/absyntax.hh"
@@ -111,30 +113,6 @@ public:
 
 private:
     std::unique_ptr<symbol_c, ast_roots_deleter> tree_root_{nullptr, ast_roots_deleter{nullptr}};
-};
-
-struct c_file_closer {
-    void operator()(FILE* f) const noexcept {
-        if (f) {
-            fclose(f);
-        }
-    }
-};
-
-struct temp_file_guard {
-    std::string path;
-
-    temp_file_guard() = default;
-    explicit temp_file_guard(std::string p) : path(std::move(p)) {}
-
-    temp_file_guard(const temp_file_guard&) = delete;
-    temp_file_guard& operator=(const temp_file_guard&) = delete;
-
-    ~temp_file_guard() noexcept {
-        if (!path.empty()) {
-            std::remove(path.c_str());
-        }
-    }
 };
 
 static std::string path_stem(const char* path) {
@@ -607,8 +585,13 @@ MATIEC_API matiec_error_t matiec_compile_string(
 #endif
 
     /* Write source to temp file */
-    temp_file_guard temp_guard{temp_file_path};
-    std::unique_ptr<FILE, c_file_closer> f(std::fopen(temp_file_path.c_str(), "wb"));
+    auto temp_guard = matiec::make_scope_exit([&]() noexcept {
+        if (!temp_file_path.empty()) {
+            std::remove(temp_file_path.c_str());
+        }
+    });
+
+    matiec::unique_c_file f(std::fopen(temp_file_path.c_str(), "wb"));
     if (!f) {
         result_set_error(result, MATIEC_ERROR_IO, "Failed to write temporary file");
         return MATIEC_ERROR_IO;

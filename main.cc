@@ -85,35 +85,7 @@
 #include "main.hh"
 #include "matiec/error.hpp"
 #include "matiec/format.hpp"
-
-namespace {
-class compilation_cleanup_guard final {
-public:
-  compilation_cleanup_guard(symbol_c *&tree_root, symbol_c *&ordered_tree_root) noexcept
-      : tree_root_(tree_root), ordered_tree_root_(ordered_tree_root) {}
-
-  compilation_cleanup_guard(const compilation_cleanup_guard &) = delete;
-  compilation_cleanup_guard &operator=(const compilation_cleanup_guard &) = delete;
-
-  ~compilation_cleanup_guard() noexcept {
-    // These global tables store raw pointers into the AST; clear them before
-    // freeing the compilation's AST.
-    absyntax_utils_reset();
-
-    // Free the AST (including any reordered wrapper produced by stage3) and
-    // then release lexer-owned strings used by tokens/filenames.
-    matiec::ast_delete(tree_root_, ordered_tree_root_);
-    matiec::cstr_pool_clear();
-
-    // Clear lexer/parser symbol tables and flags for the next run.
-    stage1_2_reset();
-  }
-
-private:
-  symbol_c *&tree_root_;
-  symbol_c *&ordered_tree_root_;
-};
-} // namespace
+#include "matiec/scope_exit.hpp"
 
 
 #ifndef HGVERSION
@@ -263,7 +235,19 @@ int main(int argc, char **argv) {
   }
 
   // Ensure compilation resources are released even on early returns/exceptions.
-  compilation_cleanup_guard cleanup(tree_root, ordered_tree_root);
+  auto cleanup = matiec::make_scope_exit([&]() noexcept {
+    // These global tables store raw pointers into the AST; clear them before
+    // freeing the compilation's AST.
+    absyntax_utils_reset();
+
+    // Free the AST (including any reordered wrapper produced by stage3) and
+    // then release lexer-owned strings used by tokens/filenames.
+    matiec::ast_delete(tree_root, ordered_tree_root);
+    matiec::cstr_pool_clear();
+
+    // Clear lexer/parser symbol tables and flags for the next run.
+    stage1_2_reset();
+  });
 
 
   /***************************/
