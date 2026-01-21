@@ -12,6 +12,7 @@
 
 #include "test_utils.hh"
 #include "matiec/matiec.h"
+#include "matiec/scope_exit.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -77,9 +78,44 @@ TEST_F(SyntaxValidationTest, IdentifierTestFilesExist) {
 }
 
 TEST_F(SyntaxValidationTest, CompileIdentifierTests) {
-    // SKIP: These test files have include directives that require special handling
-    // and may cause crashes on some platforms due to matiec's exit() behavior
-    GTEST_SKIP() << "Identifier test files have include dependencies";
+    auto identifier_dir = syntax_dir_ / "identifier";
+
+    if (!fs::exists(identifier_dir)) {
+        GTEST_SKIP() << "Identifier test directory not found: " << identifier_dir;
+    }
+
+    auto test_files = GetTestFiles(identifier_dir);
+    if (test_files.empty()) {
+        GTEST_SKIP() << "No .test files found in identifier directory";
+    }
+
+    // Identifier fixtures use {#include "..."} with files relative to the fixture
+    // directory. Temporarily run with cwd=identifier_dir so the built-in include
+    // search path (which always contains ".") resolves those includes.
+    const auto old_cwd = fs::current_path();
+    fs::current_path(identifier_dir);
+    auto restore_cwd = matiec::make_scope_exit([&]() noexcept {
+        try {
+            fs::current_path(old_cwd);
+        } catch (...) {
+            // Best-effort in tests: keep unwinding safe.
+        }
+    });
+
+    for (const auto& file : test_files) {
+        matiec_result_t r{};
+        const auto ret = matiec_compile_file(file.string().c_str(), &opts_, &r);
+        // These legacy fixtures are primarily intended to stress the lexer/parser
+        // (identifier replacement is done by the original upstream script). Some
+        // of them are not semantically valid under matiec's full pipeline today.
+        // The key property we validate here is: compiling them must not crash or
+        // terminate the test process (historically this was a risk due to exit()).
+        EXPECT_NE(ret, MATIEC_ERROR_INTERNAL) << "File: " << file.string()
+                                              << "\nError: " << (r.error_message ? r.error_message : "none");
+        EXPECT_NE(ret, MATIEC_ERROR_IO) << "File: " << file.string()
+                                        << "\nError: " << (r.error_message ? r.error_message : "none");
+        matiec_result_free(&r);
+    }
 }
 
 // =============================================================================
