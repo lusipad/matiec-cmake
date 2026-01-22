@@ -100,9 +100,8 @@ jobs:
         run: |
           cd build
           if [ "${{ matrix.sanitizers }}" = "ON" ]; then
-            # LeakSanitizer reports are noisy for now; keep ASan/UBSan signal while
-            # deferring leak cleanup to a later pass.
-            export ASAN_OPTIONS="detect_leaks=0:abort_on_error=1"
+            # Run with LeakSanitizer enabled as part of sanitizer guardrails.
+            export ASAN_OPTIONS="detect_leaks=1:abort_on_error=1"
             export UBSAN_OPTIONS="print_stacktrace=1"
           fi
           ctest --output-on-failure -C ${{ env.BUILD_TYPE }}

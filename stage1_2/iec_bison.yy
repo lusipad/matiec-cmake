@@ -8816,6 +8816,11 @@ static int parse_files(const char *libfilename, const char *filename) {
         library_element_symtable.end())
       library_element_symtable.insert(standard_function_block_names[i], standard_function_block_name_token);
 
+  /* Free lexer state from the standard library parse before switching to the
+   * user's input file. parse_file() overwrites current_tracking, so without this
+   * cleanup we'd leak the library tracking_t across compilations. */
+  stage1_2_lex_cleanup();
+
   /* now parse the input file... */
   #if YYDEBUG
     yydebug = 1;
