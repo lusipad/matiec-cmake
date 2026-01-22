@@ -1078,8 +1078,6 @@ void *fill_candidate_datatypes_c::visit(enumerated_value_list_c *symbol) {
  *          will NOT recursively call the following enumerated_value_c visitor method!
  */
 void *fill_candidate_datatypes_c::visit(enumerated_value_c *symbol) {
-	symbol_c *global_enumerated_type;
-	symbol_c *local_enumerated_type;
 	symbol_c *enumerated_type = NULL;
 
 	if (NULL != symbol->type) {
@@ -1111,12 +1109,27 @@ void *fill_candidate_datatypes_c::visit(enumerated_value_c *symbol) {
 				enumerated_type = symbol->type; 
 	}
 	else {
-		symbol_c *global_enumerated_type = global_enumerated_value_symtable.find (symbol->value)->second;
-		symbol_c * local_enumerated_type =  local_enumerated_value_symtable.find (symbol->value)->second;
-		int       global_multiplicity    = global_enumerated_value_symtable.count(symbol->value);
-		int        local_multiplicity    =  local_enumerated_value_symtable.count(symbol->value);
+		const int global_multiplicity = global_enumerated_value_symtable.count(symbol->value);
+		const int local_multiplicity  = local_enumerated_value_symtable.count(symbol->value);
 
-		if      (( local_multiplicity == 0) && (global_multiplicity == 0))
+		// Avoid dereferencing end() iterators when the symbol is not present.
+		symbol_c *global_enumerated_type = NULL;
+		symbol_c *local_enumerated_type  = NULL;
+
+		if (global_multiplicity > 0) {
+			enumerated_value_symtable_t::iterator it =
+					global_enumerated_value_symtable.lower_bound(symbol->value);
+			if (it != global_enumerated_value_symtable.end())
+				global_enumerated_type = global_enumerated_value_symtable.get_value(it);
+		}
+		if (local_multiplicity > 0) {
+			enumerated_value_symtable_t::iterator it =
+					local_enumerated_value_symtable.lower_bound(symbol->value);
+			if (it != local_enumerated_value_symtable.end())
+				local_enumerated_type = local_enumerated_value_symtable.get_value(it);
+		}
+
+		if      (( local_multiplicity == 0) && (global_multiplicity == 0))  
 		  enumerated_type = NULL; // not found!
 		else if (  local_multiplicity  > 1)
 			enumerated_type = NULL; // Local duplicate, so it is ambiguous!
@@ -2387,7 +2400,6 @@ void *fill_candidate_datatypes_c::visit(repeat_statement_c *symbol) {
 		symbol->statement_list->accept(*this);
 	return NULL;
 }
-
 
 
 
