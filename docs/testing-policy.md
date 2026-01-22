@@ -16,3 +16,9 @@
 - 影响编译/链接/入口路径/全局状态（中高风险）：构建 + 全量 `ctest`。
 - 大范围重构或行为语义变更：构建 + 全量 `ctest`；必要时补充 E2E/输出断言。
 
+## Sanitizers（可选）
+用于提前暴露内存越界/UB 等问题；默认不启用（避免工具链耦合）。
+- 启用（建议 Linux/macOS + GCC/Clang）：`cmake -S . -B build-sanitize -DMATIEC_BUILD_TESTS=ON -DMATIEC_ENABLE_SANITIZERS=ON`
+- 构建：`cmake --build build-sanitize`
+- 测试：`ctest --test-dir build-sanitize --output-on-failure`
+- Windows/MSVC：该选项会被忽略并给出 warning（不影响默认构建）。

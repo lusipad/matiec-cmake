@@ -8,6 +8,7 @@ option(MATIEC_BUILD_TOOLS "Build command-line tools (iec2c, iec2iec)" ON)
 option(MATIEC_BUILD_TESTS "Build unit and integration tests" OFF)
 option(MATIEC_INSTALL "Generate install targets" ON)
 option(MATIEC_ENABLE_CLANG_TIDY "Enable clang-tidy analysis on matiec targets (optional)" OFF)
+option(MATIEC_ENABLE_SANITIZERS "Enable Address/Undefined sanitizers (optional)" OFF)
 
 # C++ standard - C++17 for std::optional, std::string_view, etc.
 set(CMAKE_CXX_STANDARD 17)
@@ -68,6 +69,20 @@ elseif(MSVC)
     # warnings (e.g. C4819) and keep diagnostics reproducible across locales.
     add_compile_options(/utf-8)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+endif()
+
+# Optional: sanitizers (ASan/UBSan)
+# Keep default OFF to avoid toolchain coupling; enable explicitly when needed.
+if(MATIEC_ENABLE_SANITIZERS)
+    if(MSVC)
+        message(WARNING "MATIEC_ENABLE_SANITIZERS=ON is not supported with MSVC/clang-cl; ignoring.")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        message(STATUS "Enabling sanitizers (address,undefined)")
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address,undefined)
+    else()
+        message(WARNING "MATIEC_ENABLE_SANITIZERS=ON but unsupported compiler '${CMAKE_CXX_COMPILER_ID}'; ignoring.")
+    endif()
 endif()
 
 # Optional: clang-tidy (static analysis)
