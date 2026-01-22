@@ -48,6 +48,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -561,27 +562,48 @@ MATIEC_API matiec_error_t matiec_compile_string(
     std::string temp_file_path;
 
 #ifdef _WIN32
-    char temp_path[MAX_PATH];
-    char temp_file[MAX_PATH];
-    DWORD temp_path_len = GetTempPathA(MAX_PATH, temp_path);
-    if (temp_path_len == 0 || temp_path_len > MAX_PATH) {
+    std::vector<char> temp_path_buf(MAX_PATH);
+    DWORD temp_path_len = GetTempPathA(static_cast<DWORD>(temp_path_buf.size()),
+                                       temp_path_buf.data());
+    if (temp_path_len == 0) {
         result_set_error(result, MATIEC_ERROR_IO, "Failed to get temporary directory");
         return MATIEC_ERROR_IO;
     }
-    if (GetTempFileNameA(temp_path, "iec", 0, temp_file) == 0) {
+    if (temp_path_len >= temp_path_buf.size()) {
+        temp_path_buf.resize(static_cast<size_t>(temp_path_len) + 1);
+        temp_path_len = GetTempPathA(static_cast<DWORD>(temp_path_buf.size()),
+                                     temp_path_buf.data());
+        if (temp_path_len == 0 || temp_path_len >= temp_path_buf.size()) {
+            result_set_error(result, MATIEC_ERROR_IO, "Failed to get temporary directory");
+            return MATIEC_ERROR_IO;
+        }
+    }
+
+    // GetTempFileNameA() requires a buffer of at least MAX_PATH characters.
+    std::vector<char> temp_file_buf(MAX_PATH);
+    if (GetTempFileNameA(temp_path_buf.data(), "iec", 0, temp_file_buf.data()) == 0) {
         result_set_error(result, MATIEC_ERROR_IO, "Failed to create temporary file name");
         return MATIEC_ERROR_IO;
     }
-    temp_file_path = temp_file;
+    temp_file_path = temp_file_buf.data();
 #else
-    char temp_template[] = "/tmp/matiec_XXXXXX.st";
-    int fd = mkstemps(temp_template, 3);
+    constexpr int kSuffixLen = 3; // ".st"
+    std::error_code ec;
+    std::filesystem::path temp_dir = std::filesystem::temp_directory_path(ec);
+    if (ec) {
+        temp_dir = "/tmp";
+    }
+    std::string temp_template_str = (temp_dir / "matiec_XXXXXX.st").string();
+    std::vector<char> temp_template(temp_template_str.begin(), temp_template_str.end());
+    temp_template.push_back('\0');
+
+    int fd = mkstemps(temp_template.data(), kSuffixLen);
     if (fd < 0) {
         result_set_error(result, MATIEC_ERROR_IO, "Failed to create temporary file");
         return MATIEC_ERROR_IO;
     }
     close(fd);
-    temp_file_path = temp_template;
+    temp_file_path = temp_template.data();
 #endif
 
     /* Write source to temp file */

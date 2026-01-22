@@ -11,12 +11,6 @@
 #include <sstream>
 #include <chrono>
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
 namespace matiec::test {
 
 namespace fs = std::filesystem;
@@ -75,15 +69,11 @@ std::filesystem::path getLibDir() {
 }
 
 std::filesystem::path createTempDir() {
-    fs::path base;
-
-#ifdef _WIN32
-    char temp_path[MAX_PATH];
-    GetTempPathA(MAX_PATH, temp_path);
-    base = temp_path;
-#else
-    base = "/tmp";
-#endif
+    std::error_code ec;
+    fs::path base = fs::temp_directory_path(ec);
+    if (ec) {
+        base = fs::current_path();
+    }
 
     // Generate unique directory name
     auto now = std::chrono::system_clock::now();
