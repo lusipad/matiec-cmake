@@ -1,0 +1,5 @@
+ID,Title,Description,Acceptance,Test_Method,Tools,Dev_Status,Review1_Status,Regression_Status,Files,Dependencies,Notes
+B1,CMake 可选启用 Sanitizers(ASan/UBSan),"新增 CMake 选项 MATIEC_ENABLE_SANITIZERS(默认 OFF)。当启用且编译器为 GCC/Clang(非 MSVC/clang-cl)时，为项目目标注入 -fsanitize=address,undefined 等编译/链接参数；在不支持的编译器上给出 warning 并保持默认行为不变。","默认 OFF 时构建/测试不受影响；启用选项时在支持的编译器环境可成功构建并运行测试。","cmake --build build-vs --config Release | ctest --test-dir build-vs -C Release --output-on-failure",manual,TODO,TODO,TODO,CMakeLists.txt,none,none
+B2,CI 增加 Linux Sanitizers Job,"在 GitHub Actions 中增加一条 Linux x64 job，配置时开启 MATIEC_ENABLE_SANITIZERS 并执行 ctest。","CI 中 Sanitizers job 可成功构建并运行测试；失败时能提供可定位的日志。",manual: push/PR triggers CI,manual,TODO,TODO,TODO,.github/workflows/build.yml,B1,none
+B3,文档补充本地 Sanitizers 用法,"在 docs/testing-policy.md 补充如何在本地启用 MATIEC_ENABLE_SANITIZERS 的说明与示例命令，并说明支持范围(建议 Linux/macOS + Clang/GCC)。","文档包含可复现命令；默认开发流程不受影响。",manual: review docs,manual,TODO,TODO,TODO,docs/testing-policy.md,B1,none
+
