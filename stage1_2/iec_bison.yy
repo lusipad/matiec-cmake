@@ -8593,7 +8593,7 @@ void print_err_msg(int first_line,
   // and tests can observe parse errors without relying on stderr.
   if (additional_error_msg != NULL) {
     matiec::SourceLocation loc;
-    if ((first_filename != NULL) && (strcmp(first_filename, unknown_file) != 0)) {
+    if (matiec::sv_or_empty(first_filename) != unknown_file) {
       loc.filename = first_filename;
     }
     loc.line = first_line;
