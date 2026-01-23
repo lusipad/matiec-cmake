@@ -23,8 +23,9 @@ TEST(StringUtilsTest, LinkerAnchorsRuntimeOptionsForStaticArchives) {
     // the object that defines error_exit/runtime_options may not be pulled from
     // libmatiec.a unless something references it directly. This test provides
     // that reference without changing production behavior.
-    volatile const runtime_options_t* anchor = &runtime_options;
-    ASSERT_NE(anchor, nullptr);
+    volatile bool anchor = runtime_options.relaxed_datatype_model;
+    (void)anchor;
+    SUCCEED();
 }
 
 TEST(StringUtilsTest, IEqualsIsCaseInsensitive) {
