@@ -54,6 +54,7 @@
 #include <cctype>
 #include <cstddef>
 #include <stdint.h>  // required for uint64_t, etc...
+#include "matiec/string_utils.hpp"
 #include "../main.hh" // required for uint8_t, real_64_t, ..., and the macros INT8_MAX, REAL32_MAX, ... */
 
 
@@ -86,17 +87,13 @@ class symbol_c; // forward declaration
       using is_transparent = void;
 
       bool operator() (std::string_view x, std::string_view y) const {
-        std::string_view::const_iterator ix = x.begin();
-        std::string_view::const_iterator iy = y.begin();
+        return matiec::icompare(x, y) < 0;
+      }
 
-        for(; (ix != x.end()) && (iy != y.end()) &&
-              (std::toupper(static_cast<unsigned char>(*ix)) ==
-               std::toupper(static_cast<unsigned char>(*iy)));
-            ++ix, ++iy);
-        if (ix == x.end()) return (iy != y.end());
-        if (iy == y.end()) return false;
-        return (std::toupper(static_cast<unsigned char>(*ix)) <
-                std::toupper(static_cast<unsigned char>(*iy)));
+      // Some legacy call sites still pass raw C strings which may be NULL.
+      // Converting NULL to std::string_view is UB, so normalize first.
+      bool operator()(const char* x, const char* y) const {
+        return (*this)(matiec::sv_or_empty(x), matiec::sv_or_empty(y));
       }
    };
 
