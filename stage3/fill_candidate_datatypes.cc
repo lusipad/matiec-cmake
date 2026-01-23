@@ -62,15 +62,10 @@
 #include <../main.hh>         /* required for UINT64_MAX, INT64_MAX, INT64_MIN, ... */
 #include "fill_candidate_datatypes.hh"
 #include "datatype_functions.hh"
+#include "matiec/string_utils.hpp"
 #include <typeinfo>
 #include <list>
 #include <string>
-#include <string.h>
-#ifdef _WIN32
-#include <string.h>
-#else
-#include <strings.h>
-#endif
 
 
 #define GET_CVALUE(dtype, symbol)             ((symbol)->const_value.m_##dtype.get())
@@ -391,7 +386,8 @@ bool fill_candidate_datatypes_c::match_nonformal_call(symbol_c *f_call, symbol_c
 			param_name = fp_iterator.next();
 			/* If there is no other parameter declared, then we are passing too many parameters... */
 			if(param_name == NULL) return false;
-		} while ((strcmp(param_name->value, "EN") == 0) || (strcmp(param_name->value, "ENO") == 0));
+                } while ((matiec::sv_or_empty(param_name->value) == "EN") ||
+                         (matiec::sv_or_empty(param_name->value) == "ENO"));
 
 		/* Get the parameter type */
 		param_datatype = base_type(fp_iterator.param_type());
@@ -2400,6 +2396,5 @@ void *fill_candidate_datatypes_c::visit(repeat_statement_c *symbol) {
 		symbol->statement_list->accept(*this);
 	return NULL;
 }
-
 
 

@@ -55,15 +55,10 @@
 
 #include "narrow_candidate_datatypes.hh"
 #include "datatype_functions.hh"
+#include "matiec/string_utils.hpp"
 #include <typeinfo>
 #include <list>
 #include <string>
-#include <string.h>
-#ifdef _WIN32
-#include <string.h>
-#else
-#include <strings.h>
-#endif
 
 
 /* set to 1 to see debug info during execution */
@@ -168,7 +163,8 @@ void narrow_candidate_datatypes_c::narrow_nonformal_call(symbol_c *f_call, symbo
 			 * for that code too!
 			 */
 			if(param_name == NULL) break;
-		} while ((strcmp(param_name->value, "EN") == 0) || (strcmp(param_name->value, "ENO") == 0));
+                } while ((matiec::sv_or_empty(param_name->value) == "EN") ||
+                         (matiec::sv_or_empty(param_name->value) == "ENO"));
 
 		/* Set the desired datatype for this parameter, and call it recursively. */
 		/* Note that if the call has more parameters than those declared in the function/FB declaration,
@@ -1861,7 +1857,6 @@ void *narrow_candidate_datatypes_c::visit(repeat_statement_c *symbol) {
 		symbol->statement_list->accept(*this);
 	return NULL;
 }
-
 
 
 

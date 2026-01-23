@@ -46,6 +46,7 @@
 #include <cstdio>
 #include "matiec/error.hpp"
 #include "matiec/format.hpp"
+#include "matiec/string_utils.hpp"
 
 #define FIRST_(symbol1, symbol2) (((symbol1)->first_order < (symbol2)->first_order)   ? (symbol1) : (symbol2))
 #define  LAST_(symbol1, symbol2) (((symbol1)->last_order  > (symbol2)->last_order)    ? (symbol1) : (symbol2))
@@ -130,11 +131,6 @@ int lvalue_check_c::get_error_count() {
 }
 
 
-#ifdef _WIN32
-#include <string.h>
-#else
-#include <strings.h>
-#endif
 /* No writing to iterator variables (used in FOR loops) inside the loop itself */
 void lvalue_check_c::check_assignment_to_controlvar(symbol_c *lvalue) {
 	for (unsigned int i = 0; i < control_variables.size(); i++) {
@@ -331,7 +327,6 @@ void lvalue_check_c::verify_is_lvalue(symbol_c *lvalue) {
  * This means that, for non formal function calls in IL, de current (default value) must be artificially added to the
  * beginning of the parameter list BEFORE calling handle_function_call().
  */
-#include <string.h> /* required for strcmp() */
 void lvalue_check_c::check_nonformal_call(symbol_c *f_call, symbol_c *f_decl) {
 	/* if data type semantic verification was unable to determine which function is being called,
 	 * then it does not make sense to go ahead and check for lvalues to unknown parameters.
@@ -354,7 +349,8 @@ void lvalue_check_c::check_nonformal_call(symbol_c *f_call, symbol_c *f_decl) {
 			/* If there is no other parameter declared, then we are passing too many parameters... */
 			/* This error should have been caught in data type verification, so we simply abandon our check! */
 			if(param_name == NULL) return;
-		} while ((strcmp(param_name->value, "EN") == 0) || (strcmp(param_name->value, "ENO") == 0));
+                } while ((matiec::sv_or_empty(param_name->value) == "EN") ||
+                         (matiec::sv_or_empty(param_name->value) == "ENO"));
 
 		/* Determine the direction (IN, OUT, IN_OUT) of the parameter... */
 		function_param_iterator_c::param_direction_t param_direction = fp_iterator.param_direction();
@@ -622,6 +618,5 @@ void *lvalue_check_c::visit(for_statement_c *symbol) {
 	control_variables.pop_back();
 	return NULL;
 }
-
 
 
