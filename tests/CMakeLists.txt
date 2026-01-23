@@ -63,6 +63,27 @@ gtest_discover_tests(test_error_handling
         LABELS "unit"
 )
 
+# String utilities / legacy string boundary tests
+add_executable(test_string_utils
+    unit/test_string_utils.cc
+)
+target_include_directories(test_string_utils PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}
+)
+target_link_libraries(test_string_utils PRIVATE
+    matiec_test_utils
+    matiec_static
+    GTest::gtest_main
+)
+gtest_discover_tests(test_string_utils
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTIES
+        LABELS "unit"
+)
+
 # ==============================================================================
 # End-to-End Tests
 # ==============================================================================
@@ -127,7 +148,7 @@ file(COPY
 
 add_custom_target(test_unit
     COMMAND ${CMAKE_CTEST_COMMAND} -L unit --output-on-failure
-    DEPENDS test_matiec_api test_error_handling
+    DEPENDS test_matiec_api test_error_handling test_string_utils
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running unit tests..."
 )

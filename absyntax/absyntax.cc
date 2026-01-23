@@ -126,11 +126,8 @@ symbol_c *list_c::find_element(symbol_c *token) {
 }
 
 symbol_c *list_c::find_element(const char *token_value) {
-  // We could use strcasecmp(), but it's best to always use the same 
-  // method of string comparison throughout matiec
-  nocasecmp_c ncc; 
-  for (int i = 0; i < n; i++) 
-    if (!ncc(elements[i].token_value, token_value))
+  for (int i = 0; i < n; i++)
+    if (matiec::iequals(elements[i].token_value, token_value))
       return elements[i].symbol;
 
   return NULL; // not found
