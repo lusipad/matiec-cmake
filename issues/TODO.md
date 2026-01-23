@@ -8,11 +8,8 @@
 
 ## 下一步（按优先级）
 
-1) P3（字符串处理升级）拆分为 Issue CSV（来自 `C:\\Users\\lus\\.claude\\plans\\tingly-riding-volcano.md`）
-   - token_c 改为 `std::string`（可能需要同步调整 Flex/Bison 交互）
-   - 只读参数改用 `std::string_view`
-   - 移除固定长度缓冲区与不安全的 C 字符串拼接
-   - 统一字符串比较/大小写/路径处理等工具函数
+1) P3（字符串处理升级）执行并闭环（来自 `C:\\Users\\lus\\.claude\\plans\\tingly-riding-volcano.md`）
+   - Issue CSV：`issues/p3-string-upgrade-pass1.csv`
 
 2) P2（内存管理）后续路线梳理（在 `docs/AST-OWNERSHIP.md` 基础上）
    - 明确是否继续推进“子树级所有权”（高风险：Bison + SYM_REF* 宏）
