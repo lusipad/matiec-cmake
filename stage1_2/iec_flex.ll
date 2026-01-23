@@ -1252,7 +1252,7 @@ END_FUNCTION_BLOCK		|
 END_TRANSITION   		|
 END_PROGRAM			{ append_bodystate_buffer(yytext); unput_bodystate_buffer(); BEGIN(il_state); /*printf("returning start_IL_body_token\n");*/ return start_IL_body_token;}
 .|\n				{ append_bodystate_buffer(yytext);
-				  if (strcmp(yytext, ";") == 0)
+				  if (*yytext == ';')
 				    {unput_bodystate_buffer(); BEGIN(st_state); /*printf("returning start_ST_body_token\n");*/ return start_ST_body_token;}
 				}
 	/* The following rules are not really necessary. They just make compilation faster in case the ST Statement List starts with one fot he following... */
