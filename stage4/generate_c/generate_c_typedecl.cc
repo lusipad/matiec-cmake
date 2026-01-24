@@ -450,7 +450,6 @@ void *visit(subrange_specification_c *symbol) {
 /*  signed_integer DOTDOT signed_integer */
 void *visit(subrange_c *symbol) {
   TRACE("subrange_c");
-  int dimension;
   switch (current_typedefinition) {
     case array_td:
       if (current_basetypedeclaration == arraysubrange_bd) {
@@ -1075,7 +1074,7 @@ class generate_c_implicit_typedecl_c: public iterator_visitor_c {
     // SYM_REF2(ref_spec_init_c, ref_spec, ref_initialization)
     void *visit(ref_spec_init_c *symbol) {
       symbol->ref_spec->accept(*this); //--> always calls ref_spec_c or derived_datatype_identifier_c
-      int implicit_id_count = symbol->ref_spec->anotations_map.count("generate_c_annotaton__implicit_type_id");
+      const auto implicit_id_count = symbol->ref_spec->anotations_map.count("generate_c_annotaton__implicit_type_id");
       if (implicit_id_count  > 1) ERROR;
       if (implicit_id_count == 1)
         symbol->anotations_map["generate_c_annotaton__implicit_type_id"] = symbol->ref_spec->anotations_map["generate_c_annotaton__implicit_type_id"];
@@ -1096,7 +1095,7 @@ class generate_c_implicit_typedecl_c: public iterator_visitor_c {
     /* array_initialization may be NULL ! */
     void *visit(array_spec_init_c *symbol) {
       symbol->array_specification->accept(*this); //--> always calls array_specification_c or derived_datatype_identifier_c
-      int implicit_id_count = symbol->array_specification->anotations_map.count("generate_c_annotaton__implicit_type_id");
+      const auto implicit_id_count = symbol->array_specification->anotations_map.count("generate_c_annotaton__implicit_type_id");
       if (implicit_id_count  > 1) ERROR;
       if (implicit_id_count == 1)
         symbol->anotations_map["generate_c_annotaton__implicit_type_id"] = symbol->array_specification->anotations_map["generate_c_annotaton__implicit_type_id"];
@@ -1161,6 +1160,5 @@ class generate_c_implicit_typedecl_c: public iterator_visitor_c {
       return NULL;
     }
 };
-
 
 

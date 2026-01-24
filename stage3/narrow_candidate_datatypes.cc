@@ -140,12 +140,11 @@ bool narrow_candidate_datatypes_c::is_widening_compatible(const struct widen_ent
  * beginning of the parameter list BEFORE calling handle_function_call().
  */
 void narrow_candidate_datatypes_c::narrow_nonformal_call(symbol_c *f_call, symbol_c *f_decl, int *ext_parm_count) {
-	symbol_c *call_param_value,  *param_type;
+	symbol_c *call_param_value;
 	identifier_c *param_name;
 	function_param_iterator_c       fp_iterator(f_decl);
 	function_call_param_iterator_c fcp_iterator(f_call);
 	int extensible_parameter_highest_index = -1;
-	unsigned int i;
 
 	if (NULL != ext_parm_count) *ext_parm_count = -1;
 
@@ -201,14 +200,11 @@ void narrow_candidate_datatypes_c::narrow_nonformal_call(symbol_c *f_call, symbo
 
 
 void narrow_candidate_datatypes_c::narrow_formal_call(symbol_c *f_call, symbol_c *f_decl, int *ext_parm_count) {
-	symbol_c *call_param_value, *call_param_name, *param_type;
-	symbol_c *verify_duplicate_param;
+	symbol_c *call_param_value, *call_param_name;
 	identifier_c *param_name;
 	function_param_iterator_c       fp_iterator(f_decl);
 	function_call_param_iterator_c fcp_iterator(f_call);
 	int extensible_parameter_highest_index = -1;
-	identifier_c *extensible_parameter_name;
-	unsigned int i;
 
 	if (NULL != ext_parm_count) *ext_parm_count = -1;
 	/* Iterating through the formal parameters of the function call */
@@ -1857,6 +1853,5 @@ void *narrow_candidate_datatypes_c::visit(repeat_statement_c *symbol) {
 		symbol->statement_list->accept(*this);
 	return NULL;
 }
-
 
 

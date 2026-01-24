@@ -105,6 +105,14 @@
 /* External Variable and Function declarations... */
 /**************************************************/
 
+%top{
+/* Ensure stdint macros are defined before flex's fallback definitions to avoid
+ * MSVC macro redefinition warnings in generated scanners. */
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS 1
+#endif
+#include <stdint.h>
+}
 
 %{
 /* Define TEST_MAIN to include a main() function.
@@ -1987,7 +1995,7 @@ void UpdateTracking(const char *text) {
     current_tracking->lineNumber++;
     current_tracking->currentChar = 1;
   }
-  current_tracking->currentChar += strlen(token);
+  current_tracking->currentChar += static_cast<int>(strlen(token));
 }
 
 

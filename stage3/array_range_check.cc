@@ -67,7 +67,7 @@
 static inline int cmp_unsigned_signed(const uint64_t u, const int64_t s) {
   const uint64_t INT64_MAX_uvar = INT64_MAX;
   if (u <= INT64_MAX_uvar)
-    return ((int64_t)u - s);
+    return static_cast<int>(static_cast<int64_t>(u) - s);
   return -1;
 }
 

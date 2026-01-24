@@ -193,6 +193,15 @@
 		{SET_NONCONST(dtype, symbol);}                                                                            \
 }
 
+#define DO_UNARY_NEG_UINT64(operand) {                                                                                    \
+	if      (VALID_CVALUE(uint64, operand))                                                                            \
+		{SET_CVALUE(uint64, symbol, static_cast<uint64_t>(0) - GET_CVALUE(uint64, operand));}                      \
+	else if (IS_OVFLOW   (uint64, operand))                                                                            \
+		{SET_OVFLOW(uint64, symbol);}                                                                               \
+	else if (IS_NONCONST (uint64, operand))                                                                            \
+		{SET_NONCONST(uint64, symbol);}                                                                             \
+}
+
 /* Constant Propagation: Rules for Meet from "Cooper K., Torczon L. - Engineering a Compiler, Second Edition - 2011"
  * at 9.3 Static Single-Assignment Form  page 517
  * - any * undefined = any
@@ -600,7 +609,7 @@ static void *handle_neg(symbol_c *symbol, symbol_c *oper) {
 	 *       v2 =  -(-v1);                                                 <------ ILLEGAL (since it -v1 is overflow!)
 	 *       v2 =  -(-9223372036854775808 );                               <------ MUST also be ILLEGAL 
 	 */
-	DO_UNARY_OPER(uint64, -, oper);	CHECK_OVERFLOW_uint64_NEG(symbol, oper);  /* handle the uint_v := -0 situation! */
+	DO_UNARY_NEG_UINT64(oper);	CHECK_OVERFLOW_uint64_NEG(symbol, oper);  /* handle the uint_v := -0 situation! */
 	DO_UNARY_OPER( int64, -, oper);	CHECK_OVERFLOW_int64_NEG (symbol, oper);
 	DO_UNARY_OPER(real64, -, oper);	CHECK_OVERFLOW_real64(symbol);
 	return NULL;
@@ -816,7 +825,7 @@ void *constant_folding_c::visit(neg_integer_c *symbol) {
 	 * an expression would imply that the expression itself would also be set to 'overflow' condition.
 	 * This in turn would then have the compiler produce a whole load of error messages where they are not wanted!
 	 */
-	DO_UNARY_OPER(uint64, -, symbol->exp); CHECK_OVERFLOW_uint64_NEG(symbol, symbol->exp);  /* handle the uintv := -0 situation */
+	DO_UNARY_NEG_UINT64(symbol->exp); CHECK_OVERFLOW_uint64_NEG(symbol, symbol->exp);  /* handle the uintv := -0 situation */
 	if (IS_OVFLOW(uint64, symbol->exp)) SET_OVFLOW(uint64, symbol);
 	DO_UNARY_OPER( int64, -, symbol->exp); CHECK_OVERFLOW_int64_NEG (symbol, symbol->exp);
 	if (IS_OVFLOW( int64, symbol->exp)) SET_OVFLOW( int64, symbol);

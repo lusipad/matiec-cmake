@@ -374,8 +374,6 @@ bool fill_candidate_datatypes_c::match_nonformal_call(symbol_c *f_call, symbol_c
 	identifier_c *param_name;
 	function_param_iterator_c       fp_iterator(f_decl);
 	function_call_param_iterator_c fcp_iterator(f_call);
-	int extensible_parameter_highest_index = -1;
-	unsigned int i;
 
 	/* Iterating through the non-formal parameters of the function call */
 	while((call_param_value = fcp_iterator.next_nf()) != NULL) {
@@ -410,9 +408,6 @@ bool fill_candidate_datatypes_c::match_formal_call(symbol_c *f_call, symbol_c *f
 	identifier_c *param_name;
 	function_param_iterator_c       fp_iterator(f_decl);
 	function_call_param_iterator_c fcp_iterator(f_call);
-	int extensible_parameter_highest_index = -1;
-	identifier_c *extensible_parameter_name;
-	unsigned int i;
 	bool is_first_param = true;
 
 	/* Iterating through the formal parameters of the function call */
@@ -492,11 +487,9 @@ void narrow_candidate_datatypes_c::narrow_function_invocation(symbol_c *fcall, g
 void *fill_candidate_datatypes_c::handle_function_call(symbol_c *f_call, symbol_c *function_name, invocation_type_t invocation_type,
                                                        std::vector <symbol_c *> *candidate_datatypes,
                                                        std::vector <symbol_c *> *candidate_functions) {
-  */
+ */
 void fill_candidate_datatypes_c::handle_function_call(symbol_c *fcall, generic_function_call_t fcall_data) {
 	function_declaration_c *f_decl;
-	list_c *parameter_list;
-	list_c *parameter_candidate_datatypes;
 	symbol_c *returned_parameter_type;
 
 	if (debug) std::cout << "function()\n";
@@ -2396,5 +2389,4 @@ void *fill_candidate_datatypes_c::visit(repeat_statement_c *symbol) {
 		symbol->statement_list->accept(*this);
 	return NULL;
 }
-
 

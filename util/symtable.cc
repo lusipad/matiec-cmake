@@ -165,9 +165,15 @@ void symtable_c<value_type>::insert(const symbol_c *symbol, value_t new_value) {
 
 
 template<typename value_type>
-int symtable_c<value_type>::count(const       char *identifier_str) {return _base.count(identifier_str)+((inner_scope == NULL)?0:inner_scope->count(identifier_str));}
+int symtable_c<value_type>::count(const       char *identifier_str) {
+  const int inner_count = (inner_scope == NULL) ? 0 : inner_scope->count(identifier_str);
+  return static_cast<int>(_base.count(identifier_str)) + inner_count;
+}
 template<typename value_type>
-int symtable_c<value_type>::count(std::string_view identifier_str) {return _base.count(identifier_str)+((inner_scope == NULL)?0:inner_scope->count(identifier_str));}
+int symtable_c<value_type>::count(std::string_view identifier_str) {
+  const int inner_count = (inner_scope == NULL) ? 0 : inner_scope->count(identifier_str);
+  return static_cast<int>(_base.count(identifier_str)) + inner_count;
+}
 
 
 // in the operator[] we delegate to find(), since that method will also search in the inner scopes!
@@ -227,7 +233,6 @@ void symtable_c<value_type>::print(void) {
     inner_scope->print();
   }
 }
-
 
 
 

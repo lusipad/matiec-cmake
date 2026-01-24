@@ -627,7 +627,7 @@ unsigned long long calculate_time(symbol_c *symbol) {
         else ERROR; // if (NULL != interval->days) is true, then it must have a valid constant value!
       }
 
-      time_ull += time_ld;
+      time_ull += static_cast<unsigned long long>(time_ld);
       return time_ull;
   };
   ERROR; // should never reach this point!

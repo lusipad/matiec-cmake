@@ -305,8 +305,7 @@ class generate_c_inlinefcall_c: public generate_c_base_and_typeid_c {
     /*********************/
     /* B 1.4 - Variables */
     /*********************/
-    void *visit(symbolic_variable_c *symbol) {
-      unsigned int vartype;
+void *visit(symbolic_variable_c *symbol) {
       if (generating_inlinefunction) {
         if (wanted_variablegeneration == complextype_base_vg)
           generate_c_base_c::visit(symbol);

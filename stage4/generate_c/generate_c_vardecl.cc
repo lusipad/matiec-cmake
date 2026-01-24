@@ -102,8 +102,6 @@ class generate_c_array_initialization_c: public generate_c_base_and_typeid_c {
     }
 
     void init_array(symbol_c *var1_list, symbol_c *array_specification, symbol_c *array_initialization) {
-      int i;
-      
       init_array_size(array_specification);
       
       s4o.print("\n");
@@ -161,9 +159,7 @@ class generate_c_array_initialization_c: public generate_c_base_and_typeid_c {
     }
 
     void *visit(var1_list_c *symbol) {
-      int i, j;
-      
-      for (i = 0; i < symbol->n; i++) {
+      for (int i = 0; i < symbol->n; i++) {
         s4o.print(s4o.indent_spaces);
         s4o.print(SET_VAR);
         s4o.print("(");
@@ -203,7 +199,7 @@ class generate_c_array_initialization_c: public generate_c_base_and_typeid_c {
           if (array_default_value == NULL) ERROR;
           break;
         case typedecl_am: {
-            int implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
+            const auto implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
             if (implicit_id_count  > 1) ERROR;
             if (implicit_id_count == 1)
                 /* this is part of an implicitly declared datatype (i.e. inside a variable decaration), for which an equivalent C datatype
@@ -529,8 +525,6 @@ class generate_c_structure_initialization_c: public generate_c_base_and_typeid_c
     }
 
     void init_structure(symbol_c *var1_list, symbol_c *structure_type_name, symbol_c *structure_initialization) {
-      int i;
-      
       init_structure_default(structure_type_name);
       
       s4o.print("\n");
@@ -592,9 +586,7 @@ class generate_c_structure_initialization_c: public generate_c_base_and_typeid_c
     }
     
     void *visit(var1_list_c *symbol) {
-      int i, j;
-      
-      for (i = 0; i < symbol->n; i++) {
+      for (int i = 0; i < symbol->n; i++) {
         s4o.print(s4o.indent_spaces);
         s4o.print(SET_VAR);
         s4o.print("(");
@@ -2812,4 +2804,3 @@ SYM_REF2(fb_initialization_c, function_block_type_name, structure_initialization
 
 
 }; /* generate_c_vardecl_c */
-

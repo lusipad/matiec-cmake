@@ -925,7 +925,7 @@ void *visit(enumerated_value_c *symbol) {}
 
 /*  identifier ':' array_spec_init */
 void *visit(array_type_declaration_c *symbol) {
-  int implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
+  const auto implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
   if (1 != implicit_id_count) ERROR;
   return symbol->anotations_map["generate_c_annotaton__implicit_type_id"]->accept(*this);
 }
@@ -935,7 +935,7 @@ void *visit(array_type_declaration_c *symbol) {
 /* array_specification [ASSIGN array_initialization] */
 /* array_initialization may be NULL ! */
 void *visit(array_spec_init_c *symbol) {
-  int implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
+  const auto implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
   if (1 == implicit_id_count) return symbol->anotations_map["generate_c_annotaton__implicit_type_id"]->accept(*this);
   if (0 == implicit_id_count) return symbol->datatype->accept(*this);
   return NULL;
@@ -943,7 +943,7 @@ void *visit(array_spec_init_c *symbol) {
 
 /* ARRAY '[' array_subrange_list ']' OF non_generic_type_name */
 void *visit(array_specification_c *symbol) {
-  int implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
+  const auto implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
   if (1 != implicit_id_count) ERROR;
   return symbol->anotations_map["generate_c_annotaton__implicit_type_id"]->accept(*this);
 }
@@ -972,7 +972,7 @@ void *visit(initialized_structure_c *symbol) {return symbol->structure_type_name
 /* ref_spec:  REF_TO (non_generic_type_name | function_block_type_name) */
 // SYM_REF1(ref_spec_c, type_name)
 void *visit(ref_spec_c *symbol) { 
-  int implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
+  const auto implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
   if (implicit_id_count  > 1) ERROR;
   if (implicit_id_count == 1) {
       /* this is part of an implicitly declared datatype (i.e. inside a variable decaration), for which an equivalent C datatype
@@ -1002,7 +1002,7 @@ void *visit(ref_spec_init_c *symbol) {
    *       we will keep track of the datatypes that have already been declared, and henceforth
    *       only declare the datatypes that have not been previously defined.
    */
-  int implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
+  const auto implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
   if (1  < implicit_id_count) ERROR;
   if (1 == implicit_id_count)
     return symbol->anotations_map["generate_c_annotaton__implicit_type_id"]->accept(*this);
@@ -1021,7 +1021,7 @@ void *visit(ref_type_decl_c *symbol) {
    *       we will keep track of the datatypes that have already been declared, and henceforth
    *       only declare the datatypes that have not been previously defined.
    */
-  int implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
+  const auto implicit_id_count = symbol->anotations_map.count("generate_c_annotaton__implicit_type_id");
   if (0 != implicit_id_count) ERROR;
   //symbol->anotations_map["generate_c_annotaton__implicit_type_id"]->accept(generate_c_base);
   return symbol->ref_type_name->accept(*this);
@@ -1029,7 +1029,6 @@ void *visit(ref_type_decl_c *symbol) {
 
 
 }; /* class generate_c_base_and_typeid_c */
-
 
 
 
