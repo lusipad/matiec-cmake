@@ -147,6 +147,48 @@ gtest_discover_tests(test_ast_modern
         LABELS "unit"
 )
 
+# Type registry tests
+add_executable(test_type_registry
+    unit/test_type_registry.cc
+)
+target_include_directories(test_type_registry PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}
+)
+target_link_libraries(test_type_registry PRIVATE
+    matiec_test_utils
+    matiec_static
+    GTest::gtest_main
+)
+gtest_discover_tests(test_type_registry
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTIES
+        LABELS "unit"
+)
+
+# Type inferrer tests
+add_executable(test_type_inferrer
+    unit/test_type_inferrer.cc
+)
+target_include_directories(test_type_inferrer PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}
+)
+target_link_libraries(test_type_inferrer PRIVATE
+    matiec_test_utils
+    matiec_static
+    GTest::gtest_main
+)
+gtest_discover_tests(test_type_inferrer
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTIES
+        LABELS "unit"
+)
+
 # ==============================================================================
 # End-to-End Tests
 # ==============================================================================
@@ -214,6 +256,7 @@ add_custom_target(test_unit
     DEPENDS test_matiec_api test_error_handling test_string_utils
             test_visitor_result test_compilation_unit
             test_ast_modern
+            test_type_registry test_type_inferrer
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running unit tests..."
 )
