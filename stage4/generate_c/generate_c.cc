@@ -42,6 +42,8 @@
 #include "../../absyntax/visitor.hh"
 #include "../../absyntax_utils/absyntax_utils.hh"
 #include "../../main.hh" // required for ERROR() and ERROR_MSG() macros.
+#include "matiec/error.hpp"
+#include "matiec/format.hpp"
 
 #include "../stage4.hh"
 
@@ -213,7 +215,15 @@ int  stage4_parse_options(char *options) {
       case     LINE_OPT: generate_line_directives__            = 1; break;
       case SEPTFILE_OPT: generate_pou_filepairs__              = 1; break;
       case   BACKUP_OPT: generate_plc_state_backup_fuctions__  = 1; break;
-      default          : fprintf(stderr, "Unrecognized option: -O %s\n", value); return -1; break;
+      default: {
+        std::string msg = matiec::format("Unrecognized option: -O %s", value);
+        matiec::globalErrorReporter().report(
+            matiec::ErrorSeverity::Error,
+            matiec::ErrorCategory::CodeGen,
+            msg);
+        fprintf(stderr, "%s\n", msg.c_str());
+        return -1;
+      }
      }
   }     
   return 0;

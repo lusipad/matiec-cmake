@@ -165,6 +165,7 @@ void yyerror (const char *error_msg);
 
 #include "../main.hh" // required for ERROR() and ERROR_MSG() macros.
 #include "matiec/error.hpp" // structured error reporting (P1 modernization)
+#include "stage1_2_diagnostics.hh"
 
 
 
@@ -8591,20 +8592,11 @@ void print_err_msg(int first_line,
 
   // Bridge legacy parser diagnostics into the modern error reporter so the C API
   // and tests can observe parse errors without relying on stderr.
-  if (additional_error_msg != NULL) {
-    matiec::SourceLocation loc;
-    if (matiec::sv_or_empty(first_filename) != unknown_file) {
-      loc.filename = first_filename;
-    }
-    loc.line = first_line;
-    loc.column = first_column;
-
-    if (loc.isValid()) {
-      matiec::globalErrorReporter().reportParseError(additional_error_msg, loc);
-    } else {
-      matiec::globalErrorReporter().reportParseError(additional_error_msg);
-    }
-  }
+  matiec::stage1_2::report_parse_error(additional_error_msg,
+                                       first_filename,
+                                       first_line,
+                                       first_column,
+                                       unknown_file);
 }
 
 

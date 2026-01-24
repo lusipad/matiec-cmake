@@ -66,48 +66,41 @@ void stage4err(const char *stage4_generator_id, symbol_c *symbol1, symbol_c *sym
     va_list argptr;
     va_start(argptr, errmsg); /* second argument is last fixed pamater of stage4err() */
 
+    const std::string msg = matiec::vformat(errmsg, argptr);
+    va_end(argptr);
+
     /* Bridge to ErrorReporter (for library/C API consumers). */
-    {
-      va_list argptr_copy;
-      va_copy(argptr_copy, argptr);
-      std::string msg = matiec::vformat(errmsg, argptr_copy);
-      va_end(argptr_copy);
-
-      std::optional<matiec::SourceLocation> loc = std::nullopt;
-      if ((symbol1 != NULL) && (symbol2 != NULL) && (FIRST_(symbol1,symbol2)->first_file != NULL)) {
-        matiec::SourceLocation sl;
-        sl.filename = FIRST_(symbol1,symbol2)->first_file;
-        sl.line = FIRST_(symbol1,symbol2)->first_line;
-        sl.column = FIRST_(symbol1,symbol2)->first_column;
-        if (sl.isValid()) {
-          loc = sl;
-        }
+    std::optional<matiec::SourceLocation> loc = std::nullopt;
+    if ((symbol1 != NULL) && (symbol2 != NULL) && (FIRST_(symbol1,symbol2)->first_file != NULL)) {
+      matiec::SourceLocation sl;
+      sl.filename = FIRST_(symbol1,symbol2)->first_file;
+      sl.line = FIRST_(symbol1,symbol2)->first_line;
+      sl.column = FIRST_(symbol1,symbol2)->first_column;
+      if (sl.isValid()) {
+        loc = sl;
       }
-
-      std::string full_msg;
-      if (stage4_generator_id != NULL) {
-        full_msg = std::string(stage4_generator_id) + ": " + msg;
-      } else {
-        full_msg = std::move(msg);
-      }
-
-      matiec::globalErrorReporter().report(
-          matiec::ErrorSeverity::Error,
-          matiec::ErrorCategory::CodeGen,
-          std::move(full_msg),
-          loc);
     }
+
+    std::string full_msg;
+    if (stage4_generator_id != NULL) {
+      full_msg = std::string(stage4_generator_id) + ": " + msg;
+    } else {
+      full_msg = msg;
+    }
+
+    matiec::globalErrorReporter().report(
+        matiec::ErrorSeverity::Error,
+        matiec::ErrorCategory::CodeGen,
+        std::move(full_msg),
+        loc);
 
     if ((symbol1 != NULL) && (symbol2 != NULL))
       fprintf(stderr, "%s:%d-%d..%d-%d: ",
               FIRST_(symbol1,symbol2)->first_file, FIRST_(symbol1,symbol2)->first_line, FIRST_(symbol1,symbol2)->first_column,
                                                    LAST_(symbol1,symbol2) ->last_line,  LAST_(symbol1,symbol2) ->last_column);
 
-    fprintf(stderr, "error %s: ", stage4_generator_id);
-    vfprintf(stderr, errmsg, argptr);
-    fprintf(stderr, "\n");
+    fprintf(stderr, "error %s: %s\n", stage4_generator_id, msg.c_str());
     // error_count++;
-    va_end(argptr);
 }
 
 

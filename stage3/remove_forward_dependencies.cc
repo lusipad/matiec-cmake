@@ -47,84 +47,19 @@
 #include "remove_forward_dependencies.hh"
 #include "../main.hh" // required for ERROR() and ERROR_MSG() macros.
 #include "../absyntax_utils/absyntax_utils.hh"
-#include <cstdio>
-#include "matiec/error.hpp"
-#include "matiec/format.hpp"
+#include "stage3_diagnostics.hh"
 
 
 
 
 
-#define FIRST_(symbol1, symbol2) (((symbol1)->first_order < (symbol2)->first_order)   ? (symbol1) : (symbol2))
-#define  LAST_(symbol1, symbol2) (((symbol1)->last_order  > (symbol2)->last_order)    ? (symbol1) : (symbol2))
+#define STAGE3_ERROR(error_level, symbol1, symbol2, ...) \
+  MATIEC_STAGE3_ERROR((error_level), matiec::ErrorCategory::Semantic, (symbol1), (symbol2), \
+                      error_count, current_display_error_level, __VA_ARGS__)
 
-#define FIRST_(symbol1, symbol2) (((symbol1)->first_order < (symbol2)->first_order)   ? (symbol1) : (symbol2))
-#define  LAST_(symbol1, symbol2) (((symbol1)->last_order  > (symbol2)->last_order)    ? (symbol1) : (symbol2))
-
-#define STAGE3_ERROR(error_level, symbol1, symbol2, ...) {                                                                  \
-  if (current_display_error_level >= error_level) {                                                                         \
-    fprintf(stderr, "%s:%d-%d..%d-%d: error: ",                                                                             \
-            FIRST_(symbol1,symbol2)->first_file, FIRST_(symbol1,symbol2)->first_line, FIRST_(symbol1,symbol2)->first_column,\
-                                                 LAST_(symbol1,symbol2) ->last_line,  LAST_(symbol1,symbol2) ->last_column);\
-    fprintf(stderr, __VA_ARGS__);                                                                                           \
-    fprintf(stderr, "\n");                                                                                                  \
-    error_count++;                                                                                                     \
-  }                                                                                                                         \
-}
-
-
-#define STAGE3_WARNING(symbol1, symbol2, ...) {                                                                             \
-    fprintf(stderr, "%s:%d-%d..%d-%d: warning: ",                                                                           \
-            FIRST_(symbol1,symbol2)->first_file, FIRST_(symbol1,symbol2)->first_line, FIRST_(symbol1,symbol2)->first_column,\
-                                                 LAST_(symbol1,symbol2) ->last_line,  LAST_(symbol1,symbol2) ->last_column);\
-    fprintf(stderr, __VA_ARGS__);                                                                                           \
-    fprintf(stderr, "\n");                                                                                                  \
-    warning_found = true;                                                                                                   \
-}
-
-
-
-#undef STAGE3_ERROR
-#undef STAGE3_WARNING
-
-// Override legacy stage3 diagnostics to also feed the modern ErrorReporter.
-#define STAGE3_ERROR(error_level, symbol1, symbol2, ...) do { \
-  if (current_display_error_level >= (error_level)) { \
-    std::string _matiec_msg = matiec::format(__VA_ARGS__); \
-    matiec::SourceLocation _matiec_loc; \
-    _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
-    _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
-    _matiec_loc.column = FIRST_(symbol1, symbol2)->first_column; \
-    matiec::globalErrorReporter().report( \
-        matiec::ErrorSeverity::Error, \
-        matiec::ErrorCategory::Semantic, \
-        _matiec_msg, \
-        _matiec_loc.isValid() ? std::optional<matiec::SourceLocation>(_matiec_loc) : std::nullopt); \
-    fprintf(stderr, "%s:%d-%d..%d-%d: error: ", \
-            FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
-            LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
-    fprintf(stderr, "%s\n", _matiec_msg.c_str()); \
-    error_count++; \
-  } \
-} while (0)
-
-#define STAGE3_WARNING(symbol1, symbol2, ...) do { \
-  std::string _matiec_msg = matiec::format(__VA_ARGS__); \
-  matiec::SourceLocation _matiec_loc; \
-  _matiec_loc.filename = (FIRST_(symbol1, symbol2)->first_file ? FIRST_(symbol1, symbol2)->first_file : ""); \
-  _matiec_loc.line = FIRST_(symbol1, symbol2)->first_line; \
-  _matiec_loc.column = FIRST_(symbol1, symbol2)->first_column; \
-  matiec::globalErrorReporter().report( \
-      matiec::ErrorSeverity::Warning, \
-      matiec::ErrorCategory::Semantic, \
-      _matiec_msg, \
-      _matiec_loc.isValid() ? std::optional<matiec::SourceLocation>(_matiec_loc) : std::nullopt); \
-  fprintf(stderr, "%s:%d-%d..%d-%d: warning: ", \
-          FIRST_(symbol1, symbol2)->first_file, FIRST_(symbol1, symbol2)->first_line, FIRST_(symbol1, symbol2)->first_column, \
-          LAST_(symbol1, symbol2)->last_line, LAST_(symbol1, symbol2)->last_column); \
-  fprintf(stderr, "%s\n", _matiec_msg.c_str()); \
-  warning_found = true; \
-} while (0)
+#define STAGE3_WARNING(symbol1, symbol2, ...) \
+  MATIEC_STAGE3_WARNING(matiec::ErrorCategory::Semantic, (symbol1), (symbol2), warning_found, \
+                        __VA_ARGS__)
 
 /* NOTE: We create an independent visitor for this task instead of having this done by the remove_forward_dependencies_c
  *       because we do not want to handle the ***_pragma_c classes while doing this search.
@@ -342,5 +277,4 @@ void *remove_forward_dependencies_c::visit(pragma_c *symbol) {
   new_tree->add_element(symbol);
   return NULL;
 }
-
 

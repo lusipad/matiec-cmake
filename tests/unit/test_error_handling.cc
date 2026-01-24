@@ -65,6 +65,28 @@ TEST(ErrorReporterTest, SupportsErrorCallback) {
     EXPECT_EQ(calls, 1);
 }
 
+TEST(ErrorReporterTest, DetailedErrorsPreserveTypeDetails) {
+    matiec::ErrorReporter reporter;
+    matiec::SourceLocation loc;
+    loc.filename = "test.st";
+    loc.line = 4;
+    loc.column = 2;
+
+    reporter.reportTypeError("type mismatch", loc, "INT", "BOOL");
+
+    ASSERT_EQ(reporter.errors().size(), 1u);
+
+    const auto& detailed = reporter.detailedErrors();
+    ASSERT_EQ(detailed.size(), 1u);
+    ASSERT_NE(detailed[0], nullptr);
+    EXPECT_EQ(detailed[0]->category(), matiec::ErrorCategory::Type);
+
+    const std::string formatted = detailed[0]->format();
+    EXPECT_THAT(formatted, ::testing::HasSubstr("type mismatch"));
+    EXPECT_THAT(formatted, ::testing::HasSubstr("expected: INT"));
+    EXPECT_THAT(formatted, ::testing::HasSubstr("got: BOOL"));
+}
+
 TEST(CompilerErrorTest, HasCorrectErrorCategory) {
     matiec::CompilerError err(matiec::ErrorSeverity::Error,
                               matiec::ErrorCategory::Semantic,

@@ -114,7 +114,7 @@ TEST(MatiecOptionsTest, InitHandlesNullPointer) {
 TEST_F(MatiecApiTest, CompileFileRejectsNullResult) {
     TempDir temp;
     auto file = temp.path() / "test.st";
-    writeFile(file, samples::MINIMAL_PROGRAM);
+    ASSERT_TRUE(writeFile(file, samples::MINIMAL_PROGRAM));
 
     auto result = matiec_compile_file(file.string().c_str(), &opts_, nullptr);
     EXPECT_EQ(result, MATIEC_ERROR_INVALID_ARG);
@@ -144,6 +144,23 @@ TEST_F(MatiecApiTest, CompileStringRejectsNullSource) {
     EXPECT_EQ(result_.error_code, MATIEC_ERROR_INVALID_ARG);
 }
 
+TEST_F(MatiecApiTest, CompileFileReportsSemanticErrorDetails) {
+    TempDir temp;
+    auto file = temp.path() / "type_error.st";
+    ASSERT_TRUE(writeFile(file, samples::TYPE_ERROR));
+
+    std::string file_str = file.string();
+    auto result = matiec_compile_file(file_str.c_str(), &opts_, &result_);
+
+    EXPECT_EQ(result, MATIEC_ERROR_SEMANTIC);
+    EXPECT_EQ(result_.error_code, MATIEC_ERROR_SEMANTIC);
+    ASSERT_NE(result_.error_message, nullptr);
+    EXPECT_THAT(result_.error_message, ::testing::HasSubstr("error"));
+    EXPECT_GT(result_.error_line, 0);
+    ASSERT_NE(result_.error_file, nullptr);
+    EXPECT_THAT(result_.error_file, ::testing::HasSubstr("type_error.st"));
+}
+
 // =============================================================================
 // Compilation tests
 // =============================================================================
@@ -151,7 +168,7 @@ TEST_F(MatiecApiTest, CompileStringRejectsNullSource) {
 TEST_F(MatiecApiTest, CompileMinimalProgram) {
     TempDir temp;
     auto file = temp.path() / "test.st";
-    writeFile(file, samples::MINIMAL_PROGRAM);
+    ASSERT_TRUE(writeFile(file, samples::MINIMAL_PROGRAM));
     std::string output_dir_str = temp.path().string();
     opts_.output_dir = output_dir_str.c_str();
 
@@ -165,7 +182,7 @@ TEST_F(MatiecApiTest, CompileMinimalProgram) {
 TEST_F(MatiecApiTest, CompileArithmeticProgram) {
     TempDir temp;
     auto file = temp.path() / "arithmetic.st";
-    writeFile(file, samples::ARITHMETIC_PROGRAM);
+    ASSERT_TRUE(writeFile(file, samples::ARITHMETIC_PROGRAM));
     std::string output_dir_str = temp.path().string();
     opts_.output_dir = output_dir_str.c_str();
 
@@ -178,7 +195,7 @@ TEST_F(MatiecApiTest, CompileArithmeticProgram) {
 TEST_F(MatiecApiTest, CompileConditionalProgram) {
     TempDir temp;
     auto file = temp.path() / "conditional.st";
-    writeFile(file, samples::CONDITIONAL_PROGRAM);
+    ASSERT_TRUE(writeFile(file, samples::CONDITIONAL_PROGRAM));
     std::string output_dir_str = temp.path().string();
     opts_.output_dir = output_dir_str.c_str();
 
@@ -191,7 +208,7 @@ TEST_F(MatiecApiTest, CompileConditionalProgram) {
 TEST_F(MatiecApiTest, CompileLoopProgram) {
     TempDir temp;
     auto file = temp.path() / "loop.st";
-    writeFile(file, samples::LOOP_PROGRAM);
+    ASSERT_TRUE(writeFile(file, samples::LOOP_PROGRAM));
     std::string output_dir_str = temp.path().string();
     opts_.output_dir = output_dir_str.c_str();
 
@@ -204,7 +221,7 @@ TEST_F(MatiecApiTest, CompileLoopProgram) {
 TEST_F(MatiecApiTest, CompileFunctionBlock) {
     TempDir temp;
     auto file = temp.path() / "fb.st";
-    writeFile(file, samples::SIMPLE_FUNCTION_BLOCK);
+    ASSERT_TRUE(writeFile(file, samples::SIMPLE_FUNCTION_BLOCK));
     std::string output_dir_str = temp.path().string();
     opts_.output_dir = output_dir_str.c_str();
 
@@ -237,7 +254,7 @@ TEST_F(MatiecApiTest, CompileFromString) {
 TEST_F(MatiecApiTest, DetectsSyntaxError) {
     TempDir temp;
     auto file = temp.path() / "invalid.st";
-    writeFile(file, samples::INVALID_SYNTAX);
+    ASSERT_TRUE(writeFile(file, samples::INVALID_SYNTAX));
     std::string output_dir_str = temp.path().string();
     opts_.output_dir = output_dir_str.c_str();
 
@@ -254,7 +271,7 @@ TEST_F(MatiecApiTest, DetectsSyntaxError) {
 TEST_F(MatiecApiTest, DetectsTypeError) {
     TempDir temp;
     auto file = temp.path() / "type_error.st";
-    writeFile(file, samples::TYPE_ERROR);
+    ASSERT_TRUE(writeFile(file, samples::TYPE_ERROR));
     std::string output_dir_str = temp.path().string();
     opts_.output_dir = output_dir_str.c_str();
 
@@ -281,7 +298,7 @@ TEST_F(MatiecApiTest, SupportsMultipleCompilesInOneProcess) {
     // 1) Parse error
     {
         auto file = temp.path() / "bad.st";
-        writeFile(file, samples::INVALID_SYNTAX);
+        ASSERT_TRUE(writeFile(file, samples::INVALID_SYNTAX));
 
         matiec_options_t opts = opts_;
         opts.output_dir = out1.c_str();
@@ -295,7 +312,7 @@ TEST_F(MatiecApiTest, SupportsMultipleCompilesInOneProcess) {
     // 2) Successful compile
     {
         auto file = temp.path() / "good.st";
-        writeFile(file, samples::MINIMAL_PROGRAM);
+        ASSERT_TRUE(writeFile(file, samples::MINIMAL_PROGRAM));
 
         matiec_options_t opts = opts_;
         opts.output_dir = out2.c_str();
@@ -309,7 +326,7 @@ TEST_F(MatiecApiTest, SupportsMultipleCompilesInOneProcess) {
     // 3) Successful compile with pre-parsing enabled (forward refs)
     {
         auto file = temp.path() / "preparse.st";
-        writeFile(file, samples::MINIMAL_PROGRAM);
+        ASSERT_TRUE(writeFile(file, samples::MINIMAL_PROGRAM));
 
         matiec_options_t opts = opts_;
         opts.allow_forward_refs = true;
@@ -344,7 +361,7 @@ TEST(MatiecResultTest, FreeHandlesZeroedResult) {
 TEST_F(MatiecApiTest, AcceptsNullOptions) {
     TempDir temp;
     auto file = temp.path() / "test.st";
-    writeFile(file, samples::MINIMAL_PROGRAM);
+    ASSERT_TRUE(writeFile(file, samples::MINIMAL_PROGRAM));
 
     // Compile with NULL options (should use defaults), but run from a temp cwd
     // so we don't accidentally emit generated C files into the repo root.

@@ -5,10 +5,11 @@
 - 当前无进行中的 Issue CSV
 
 ## 下一步（按优先级）
-1) 如需继续推进 P1（错误处理现代化）：先拆分 issue，再从 stage3 诊断路径做小范围试点，确保回归门禁稳定后扩展
-2) 如需继续推进 P3 后续（Pass4+）：再单独规划更大范围的 token/string 生命周期改造
+1) 如需继续推进 P3 后续（Pass4+）：再单独规划更大范围的 token/string 生命周期改造
 
 ## 已完成（DONE）
+- `issues/p1-error-handling-modernization-pass1.csv`：A1-A2
+- `issues/p1-error-handling-modernization-pass2.csv`：B1-B4
 - `issues/p-modern-cpp-style-overview.csv`：M1-M8
 - `issues/p2-memory-safety-guardrails-pass1.csv`：B1-B3
 - `issues/p2-memory-safety-guardrails-pass2.csv`：C1-C3

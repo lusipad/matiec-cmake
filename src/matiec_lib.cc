@@ -283,6 +283,13 @@ static matiec_error_t map_error_category(matiec::ErrorCategory category) {
 }
 
 static const matiec::CompilerError* first_reported_error() {
+    const auto& detailed = matiec::globalErrorReporter().detailedErrors();
+    for (const auto& err : detailed) {
+        if (err && err->isError()) {
+            return err.get();
+        }
+    }
+
     const auto& errors = matiec::globalErrorReporter().errors();
     for (const auto& err : errors) {
         if (err.isError()) {

@@ -145,6 +145,7 @@
 #include "iec_bison.hh"
 #include "stage1_2_priv.hh"
 #include "matiec/error.hpp"
+#include "stage1_2_diagnostics.hh"
 
 /* Global error counter used by bison (yyparse). */
 extern int yynerrs;
@@ -2021,7 +2022,7 @@ void print_include_stack(void) {
 void handle_include_file_(FILE *filehandle, const char *filename) {
   if (include_stack_ptr >= MAX_INCLUDE_DEPTH) {
     fprintf(stderr, "Includes nested too deeply\n");
-    matiec::globalErrorReporter().report(
+    matiec::stage1_2::report_error(
         matiec::ErrorSeverity::Error,
         matiec::ErrorCategory::IO,
         "Includes nested too deeply");
@@ -2054,7 +2055,7 @@ void include_string_(const char *source_code) {
   
   if(tmp_file == NULL) {
     perror("Error creating temp file.");
-    matiec::globalErrorReporter().report(
+    matiec::stage1_2::report_error(
         matiec::ErrorSeverity::Error,
         matiec::ErrorCategory::IO,
         "Error creating temporary file.");
@@ -2082,7 +2083,7 @@ void include_file(const char *filename) {
       full_name = std::string(INCLUDE_DIRECTORIES[i]) + "/" + filename;
     } catch (const std::bad_alloc&) {
       fprintf(stderr, "Out of memory!\n");
-      matiec::globalErrorReporter().report(
+      matiec::stage1_2::report_error(
           matiec::ErrorSeverity::Fatal,
           matiec::ErrorCategory::Internal,
           "Out of memory while resolving include file path.");
@@ -2094,7 +2095,7 @@ void include_file(const char *filename) {
 
   if (NULL == filehandle) {
     fprintf(stderr, "Error opening included file %s\n", filename);
-    matiec::globalErrorReporter().report(
+    matiec::stage1_2::report_error(
         matiec::ErrorSeverity::Error,
         matiec::ErrorCategory::IO,
         std::string("Error opening included file ") + filename);

@@ -205,14 +205,32 @@ int main(int argc, char **argv) {
       if (stage4_parse_options(optarg) < 0) errflg++;
       break;
     case ':':       /* -I, -T, or -O without operand */
-      fprintf(stderr, "Option -%c requires an operand\n", optopt);
+      {
+        std::string msg = matiec::format("Option -%c requires an operand", optopt);
+        matiec::globalErrorReporter().report(
+            matiec::ErrorSeverity::Error,
+            matiec::ErrorCategory::IO,
+            msg);
+        fprintf(stderr, "%s\n", msg.c_str());
+      }
       errflg++;
       break;
     case '?':
-      fprintf(stderr, "Unrecognized option: -%c\n", optopt);
+      {
+        std::string msg = matiec::format("Unrecognized option: -%c", optopt);
+        matiec::globalErrorReporter().report(
+            matiec::ErrorSeverity::Error,
+            matiec::ErrorCategory::IO,
+            msg);
+        fprintf(stderr, "%s\n", msg.c_str());
+      }
       errflg++;
       break;
     default:
+      matiec::globalErrorReporter().report(
+          matiec::ErrorSeverity::Error,
+          matiec::ErrorCategory::IO,
+          "Unknown error while parsing command line options.");
       fprintf(stderr, "Unknown error while parsing command line options.");
       errflg++;
       break;
@@ -220,11 +238,19 @@ int main(int argc, char **argv) {
   }
 
   if (optind == argc) {
+    matiec::globalErrorReporter().report(
+        matiec::ErrorSeverity::Error,
+        matiec::ErrorCategory::IO,
+        "Missing input file");
     fprintf(stderr, "Missing input file\n");
     errflg++;
   }
 
   if (optind > argc) {
+    matiec::globalErrorReporter().report(
+        matiec::ErrorSeverity::Error,
+        matiec::ErrorCategory::IO,
+        "Too many input files");
     fprintf(stderr, "Too many input files\n");
     errflg++;
   }

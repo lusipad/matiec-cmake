@@ -139,6 +139,13 @@ public:
      */
     [[nodiscard]] virtual std::string format() const;
 
+    /**
+     * @brief Clone the error preserving dynamic type
+     */
+    [[nodiscard]] virtual std::unique_ptr<CompilerError> clone() const {
+        return std::make_unique<CompilerError>(*this);
+    }
+
 protected:
     ErrorSeverity severity_;
     ErrorCategory category_;
@@ -157,6 +164,10 @@ public:
 
     ParseError(std::string message)
         : CompilerError(ErrorSeverity::Error, ErrorCategory::Syntax, std::move(message)) {}
+
+    [[nodiscard]] std::unique_ptr<CompilerError> clone() const override {
+        return std::make_unique<ParseError>(*this);
+    }
 };
 
 /**
@@ -170,6 +181,10 @@ public:
 
     SemanticError(std::string message)
         : CompilerError(ErrorSeverity::Error, ErrorCategory::Semantic, std::move(message)) {}
+
+    [[nodiscard]] std::unique_ptr<CompilerError> clone() const override {
+        return std::make_unique<SemanticError>(*this);
+    }
 };
 
 /**
@@ -188,6 +203,9 @@ public:
     [[nodiscard]] const std::string& actualType() const noexcept { return actual_type_; }
 
     [[nodiscard]] std::string format() const override;
+    [[nodiscard]] std::unique_ptr<CompilerError> clone() const override {
+        return std::make_unique<TypeError>(*this);
+    }
 
 private:
     std::string expected_type_;
@@ -207,6 +225,9 @@ public:
     [[nodiscard]] int sourceLine() const noexcept { return source_line_; }
 
     [[nodiscard]] std::string format() const override;
+    [[nodiscard]] std::unique_ptr<CompilerError> clone() const override {
+        return std::make_unique<InternalError>(*this);
+    }
 
 private:
     const char* source_file_;
@@ -237,7 +258,7 @@ public:
     /**
      * @brief Report an error
      */
-    void report(CompilerError error);
+    void report(const CompilerError& error);
 
     /**
      * @brief Report an error (convenience overload)
@@ -276,7 +297,16 @@ public:
     /**
      * @brief Get all collected errors
      */
-    [[nodiscard]] const std::vector<CompilerError>& errors() const noexcept { return errors_; }
+    [[nodiscard]] const std::vector<CompilerError>& errors() const noexcept {
+        return errors_snapshot_;
+    }
+
+    /**
+     * @brief Get all collected errors with dynamic type preserved
+     */
+    [[nodiscard]] const std::vector<std::unique_ptr<CompilerError>>& detailedErrors() const noexcept {
+        return errors_;
+    }
 
     /**
      * @brief Get error count (errors + fatal errors, not warnings)
@@ -328,7 +358,8 @@ public:
     }
 
 private:
-    std::vector<CompilerError> errors_;
+    std::vector<std::unique_ptr<CompilerError>> errors_;
+    std::vector<CompilerError> errors_snapshot_;
     ErrorCallback callback_;
     int error_count_ = 0;
     int warning_count_ = 0;

@@ -105,7 +105,7 @@ std::string InternalError::format() const {
 // ErrorReporter implementation
 // =============================================================================
 
-void ErrorReporter::report(CompilerError error) {
+void ErrorReporter::report(const CompilerError& error) {
     // Update counters
     if (error.isError()) {
         ++error_count_;
@@ -122,8 +122,9 @@ void ErrorReporter::report(CompilerError error) {
         callback_(error);
     }
 
-    // Store error
-    errors_.push_back(std::move(error));
+    // Store error (preserve dynamic type) and update compatibility snapshot.
+    errors_snapshot_.push_back(error);
+    errors_.push_back(error.clone());
 }
 
 void ErrorReporter::report(ErrorSeverity severity, ErrorCategory category,
@@ -132,7 +133,7 @@ void ErrorReporter::report(ErrorSeverity severity, ErrorCategory category,
     if (location) {
         error = CompilerError(severity, category, error.message(), std::move(*location));
     }
-    report(std::move(error));
+    report(error);
 }
 
 void ErrorReporter::reportParseError(std::string message, SourceLocation location) {
@@ -178,11 +179,12 @@ void ErrorReporter::reportWarning(std::string message, std::optional<SourceLocat
         error = CompilerError(ErrorSeverity::Warning, ErrorCategory::Semantic,
                               error.message(), std::move(*location));
     }
-    report(std::move(error));
+    report(error);
 }
 
 void ErrorReporter::clear() noexcept {
     errors_.clear();
+    errors_snapshot_.clear();
     error_count_ = 0;
     warning_count_ = 0;
     has_fatal_ = false;
@@ -190,7 +192,10 @@ void ErrorReporter::clear() noexcept {
 
 void ErrorReporter::printAll() const {
     for (const auto& error : errors_) {
-        std::cerr << error.format() << std::endl;
+        if (!error) {
+            continue;
+        }
+        std::cerr << error->format() << std::endl;
     }
 }
 
