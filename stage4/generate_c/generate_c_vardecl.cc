@@ -268,7 +268,7 @@ class generate_c_array_initialization_c: public generate_c_base_and_typeid_c {
     /* integer '(' [array_initial_element] ')' */
     /* array_initial_element may be NULL ! */
     void *visit(array_initial_elements_c *symbol) {
-      unsigned long long int initial_element_count;
+      unsigned long long int initial_element_count = 0;
  
       /* This code assumes that unsigned long long int is >= uint64_t */
       if (std::numeric_limits< uint64_t >::max() > std::numeric_limits< unsigned long long int >::max()) 
