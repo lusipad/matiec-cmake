@@ -55,6 +55,7 @@
 #include <cstddef>
 #include <stdint.h>  // required for uint64_t, etc...
 #include "matiec/string_utils.hpp"
+#include "matiec/types/typed_const_value.hpp"
 #include "../main.hh" // required for uint8_t, real_64_t, ..., and the macros INT8_MAX, REAL32_MAX, ... */
 
 
@@ -269,9 +270,14 @@ class symbol_c {
      */
     symbol_c *scope;    
 
+    /* Modern annotations populated by stage3 bridges. */
+    std::vector<std::shared_ptr<const matiec::types::Type>> candidate_types;
+    std::shared_ptr<const matiec::types::Type> datatype_modern;
+
     /*** constant folding ***/
     /* If the symbol has a constant numerical value, this will be set to that value by constant_folding_c */
     const_value_c const_value;
+    matiec::types::TypedConstValue const_value_modern;
     
     /*** Enumeration datatype checking ***/    
     /* Not all symbols will contain the following anotations, which is why they are not declared here in symbol_c

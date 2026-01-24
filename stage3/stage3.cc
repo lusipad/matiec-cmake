@@ -39,6 +39,7 @@
 #include "narrow_candidate_datatypes.hh"
 #include "forced_narrow_candidate_datatypes.hh"
 #include "print_datatypes_error.hh"
+#include "modern_semantic_annotations.hh"
 #include "lvalue_check.hh"
 #include "array_range_check.hh"
 #include "case_elements_check.hh"
@@ -104,6 +105,8 @@ static int type_safety(symbol_c *tree_root){
 	tree_root->accept(print_datatypes_error);
 	forced_narrow_candidate_datatypes_c forced_narrow_candidate_datatypes(tree_root);
 	tree_root->accept(forced_narrow_candidate_datatypes);
+	matiec::stage3::modern_semantic_annotations_c modern_semantic_annotations;
+	tree_root->accept(modern_semantic_annotations);
 	return print_datatypes_error.get_error_count();
 }
 

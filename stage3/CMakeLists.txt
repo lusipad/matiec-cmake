@@ -7,6 +7,7 @@ add_library(stage3 STATIC
     forced_narrow_candidate_datatypes.cc
     print_datatypes_error.cc
     datatype_functions.cc
+    modern_semantic_annotations.cc
     lvalue_check.cc
     array_range_check.cc
     case_elements_check.cc

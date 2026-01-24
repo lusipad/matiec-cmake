@@ -189,6 +189,48 @@ gtest_discover_tests(test_type_inferrer
         LABELS "unit"
 )
 
+# Semantic candidate narrowing tests
+add_executable(test_semantic_candidates
+    unit/test_semantic_candidates.cc
+)
+target_include_directories(test_semantic_candidates PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}
+)
+target_link_libraries(test_semantic_candidates PRIVATE
+    matiec_test_utils
+    matiec_static
+    GTest::gtest_main
+)
+gtest_discover_tests(test_semantic_candidates
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTIES
+        LABELS "unit"
+)
+
+# Constant folding annotation tests
+add_executable(test_constant_folding
+    unit/test_constant_folding.cc
+)
+target_include_directories(test_constant_folding PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}
+)
+target_link_libraries(test_constant_folding PRIVATE
+    matiec_test_utils
+    matiec_static
+    GTest::gtest_main
+)
+gtest_discover_tests(test_constant_folding
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTIES
+        LABELS "unit"
+)
+
 # ==============================================================================
 # End-to-End Tests
 # ==============================================================================
@@ -257,6 +299,7 @@ add_custom_target(test_unit
             test_visitor_result test_compilation_unit
             test_ast_modern
             test_type_registry test_type_inferrer
+            test_semantic_candidates test_constant_folding
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running unit tests..."
 )
