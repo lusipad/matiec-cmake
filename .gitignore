@@ -45,16 +45,9 @@
 *.out
 *.app
 
-# Automake, etc #
-#################
-autom4te.cache
+# Build artifacts #
+####################
 Makefile
-Makefile.in
-config.log
-stamp-h1
-config.status
-configure
-aclocal.m4
 
 # Specific files #
 ##################
@@ -77,3 +70,24 @@ stage1_2/iec_flex.cc
 config/config.h
 !config/config.h.in
 test/**
+
+# IDE #
+#######
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS #
+######
+.DS_Store
+Thumbs.db
+
+# CMake artifacts #
+###################
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+Testing/
