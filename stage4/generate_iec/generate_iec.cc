@@ -57,6 +57,7 @@
 #include "generate_iec.hh"
 
 #include "../stage4.hh"
+#include "../stage4_emitter.hh"
 #include "../../main.hh" // required for ERROR() and ERROR_MSG() macros.
 
 
@@ -84,10 +85,13 @@ void stage4_print_options(void) {
 class generate_iec_c: public visitor_c {
   private:
     stage4out_c &s4o;
+    matiec::codegen::CodeEmitter emitter;
 
 
   public:
-    generate_iec_c(stage4out_c *s4o_ptr): s4o(*s4o_ptr) {}
+    generate_iec_c(stage4out_c *s4o_ptr)
+      : s4o(*s4o_ptr),
+        emitter(matiec::codegen::make_stage4_emitter(s4o)) {}
     ~generate_iec_c(void) {}
 
 
@@ -759,14 +763,15 @@ void *visit(non_retain_option_c *symbol) {s4o.print("NON_RETAIN"); return NULL;}
 /* option -> the RETAIN/NON_RETAIN/<NULL> directive... */
 void *visit(input_declarations_c *symbol) {
   if (typeid(*(symbol->method)) == typeid(explicit_definition_c)) {
-    s4o.print(s4o.indent_spaces); s4o.print("VAR_INPUT ");
+    emitter.writeIndent();
+    emitter.write("VAR_INPUT ");
     if (symbol->option != NULL)
       symbol->option->accept(*this);
-    s4o.print("\n");
-    s4o.indent_right();
+    emitter.newline();
+    emitter.indent();
     symbol->input_declaration_list->accept(*this);
-    s4o.indent_left();
-    s4o.print(s4o.indent_spaces); s4o.print("END_VAR\n");
+    emitter.dedent();
+    emitter.writeLine("END_VAR");
   }
   return NULL;
 }
@@ -895,26 +900,28 @@ void *visit(fb_name_list_c *symbol) {return print_list(symbol, "", ", ");}
 /* option -> may be NULL ! */
 void *visit(output_declarations_c *symbol) {
   if (typeid(*(symbol->method)) == typeid(explicit_definition_c)) {
-    s4o.print(s4o.indent_spaces); s4o.print("VAR_OUTPUT ");
+    emitter.writeIndent();
+    emitter.write("VAR_OUTPUT ");
     if (symbol->option != NULL)
       symbol->option->accept(*this);
-    s4o.print("\n");
-    s4o.indent_right();
+    emitter.newline();
+    emitter.indent();
     symbol->var_init_decl_list->accept(*this);
-    s4o.indent_left();
-    s4o.print(s4o.indent_spaces); s4o.print("END_VAR\n");
+    emitter.dedent();
+    emitter.writeLine("END_VAR");
   }
   return NULL;
 }
 
 /*  VAR_IN_OUT  END_VAR */
 void *visit(input_output_declarations_c *symbol) {
-  s4o.print(s4o.indent_spaces); s4o.print("VAR_IN_OUT ");
-  s4o.print("\n");
-  s4o.indent_right();
+  emitter.writeIndent();
+  emitter.write("VAR_IN_OUT ");
+  emitter.newline();
+  emitter.indent();
   symbol->var_declaration_list->accept(*this);
-  s4o.indent_left();
-  s4o.print(s4o.indent_spaces); s4o.print("END_VAR\n");
+  emitter.dedent();
+  emitter.writeLine("END_VAR");
   return NULL;
 }
 
@@ -943,39 +950,42 @@ void *visit(structured_var_declaration_c *symbol) {
 /* VAR [CONSTANT] var_init_decl_list END_VAR */
 /* option -> may be NULL ! */
 void *visit(var_declarations_c *symbol) {
-  s4o.print(s4o.indent_spaces); s4o.print("VAR ");
+  emitter.writeIndent();
+  emitter.write("VAR ");
   if (symbol->option != NULL)
     symbol->option->accept(*this);
-  s4o.print("\n");
-  s4o.indent_right();
+  emitter.newline();
+  emitter.indent();
   symbol->var_init_decl_list->accept(*this);
-  s4o.indent_left();
-  s4o.print(s4o.indent_spaces); s4o.print("END_VAR\n");
+  emitter.dedent();
+  emitter.writeLine("END_VAR");
   return NULL;
 }
 
 /*  VAR RETAIN var_init_decl_list END_VAR */
 void *visit(retentive_var_declarations_c *symbol) {
-  s4o.print(s4o.indent_spaces); s4o.print("VAR RETAIN ");
-  s4o.print("\n");
-  s4o.indent_right();
+  emitter.writeIndent();
+  emitter.write("VAR RETAIN ");
+  emitter.newline();
+  emitter.indent();
   symbol->var_init_decl_list->accept(*this);
-  s4o.indent_left();
-  s4o.print(s4o.indent_spaces); s4o.print("END_VAR\n");
+  emitter.dedent();
+  emitter.writeLine("END_VAR");
   return NULL;
 }
 
 /*  VAR [CONSTANT|RETAIN|NON_RETAIN] located_var_decl_list END_VAR */
 /* option -> may be NULL ! */
 void *visit(located_var_declarations_c *symbol) {
-  s4o.print(s4o.indent_spaces); s4o.print("VAR ");
+  emitter.writeIndent();
+  emitter.write("VAR ");
   if (symbol->option != NULL)
     symbol->option->accept(*this);
-  s4o.print("\n");
-  s4o.indent_right();
+  emitter.newline();
+  emitter.indent();
   symbol->located_var_decl_list->accept(*this);
-  s4o.indent_left();
-  s4o.print(s4o.indent_spaces); s4o.print("END_VAR\n");
+  emitter.dedent();
+  emitter.writeLine("END_VAR");
   return NULL;
 }
 
@@ -2165,10 +2175,6 @@ void *visit(exit_statement_c *symbol) {
 
 visitor_c *new_code_generator(stage4out_c *s4o, const char *builddir)  {return new generate_iec_c(s4o);}
 void delete_code_generator(visitor_c *code_generator) {delete code_generator;}
-
-
-
-
 
 
 

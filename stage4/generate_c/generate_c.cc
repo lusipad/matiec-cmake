@@ -46,6 +46,7 @@
 #include "matiec/format.hpp"
 
 #include "../stage4.hh"
+#include "../stage4_emitter.hh"
 
 //#define DEBUG
 #ifdef DEBUG
@@ -800,26 +801,22 @@ class generate_c_pous_c {
 
   private:
     static void print_end_of_block_label(stage4out_c &s4o) {
+      auto emitter = matiec::codegen::make_stage4_emitter(s4o);
       /* Print and __end label for return statements!
        * If label is not used by at least one goto, compiler will generate a warning.
        * To work around this we introduce the useless goto.
        */
-      s4o.print("\n");
+      emitter.newline();
       /* to humour the compiler, we insert a goto */
-      s4o.print(s4o.indent_spaces);
-      s4o.print("goto ");
-      s4o.print(END_LABEL);
-      s4o.print(";\n");
-      s4o.indent_left();
+      emitter.writeLine(std::string("goto ") + END_LABEL + ";");
+      emitter.dedent();
 
       /* write the label marking the end of the code block */
       /* please see the comment before the RET_operator_c visitor for details... */
       /* also needed for return_statement_c */
-      s4o.print("\n");
-      s4o.print(s4o.indent_spaces);
-      s4o.print(END_LABEL);
-      s4o.print(":\n");
-      s4o.indent_right();
+      emitter.newline();
+      emitter.writeLine(std::string(END_LABEL) + ":");
+      emitter.indent();
     }
   
 
@@ -2202,12 +2199,13 @@ void print_backup_restore_function_beg(stage4out_c &s4o, const char *func_name, 
 
 /* print out the ending of the generic backup/restore function */
 void print_backup_restore_function_end(stage4out_c &s4o) {
-  s4o.print(s4o.indent_spaces); s4o.print("#undef " DECLARE_GLOBAL          "\n");
-  s4o.print(s4o.indent_spaces); s4o.print("#undef " DECLARE_GLOBAL_FB       "\n");
-  s4o.print(s4o.indent_spaces); s4o.print("#undef " DECLARE_GLOBAL_LOCATION "\n");
-  s4o.print(s4o.indent_spaces); s4o.print("#undef " DECLARE_GLOBAL_LOCATED  "\n");
-  s4o.indent_left();
-  s4o.print("}\n");      
+  auto emitter = matiec::codegen::make_stage4_emitter(s4o);
+  emitter.writeLine(std::string("#undef ") + DECLARE_GLOBAL);
+  emitter.writeLine(std::string("#undef ") + DECLARE_GLOBAL_FB);
+  emitter.writeLine(std::string("#undef ") + DECLARE_GLOBAL_LOCATION);
+  emitter.writeLine(std::string("#undef ") + DECLARE_GLOBAL_LOCATED);
+  emitter.dedent();
+  emitter.writeLine("}");
 }
 
 

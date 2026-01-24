@@ -231,6 +231,27 @@ gtest_discover_tests(test_constant_folding
         LABELS "unit"
 )
 
+# Code emitter tests
+add_executable(test_codegen_emitter
+    unit/test_codegen_emitter.cc
+)
+target_include_directories(test_codegen_emitter PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}
+)
+target_link_libraries(test_codegen_emitter PRIVATE
+    matiec_test_utils
+    matiec_static
+    GTest::gtest_main
+)
+gtest_discover_tests(test_codegen_emitter
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTIES
+        LABELS "unit"
+)
+
 # ==============================================================================
 # End-to-End Tests
 # ==============================================================================
@@ -279,6 +300,28 @@ gtest_discover_tests(test_syntax_validation
         TIMEOUT 60
 )
 
+# Codegen regression tests
+add_executable(test_codegen_regression
+    e2e/test_codegen_regression.cc
+)
+target_include_directories(test_codegen_regression PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}
+)
+target_link_libraries(test_codegen_regression PRIVATE
+    matiec_test_utils
+    matiec_static
+    GTest::gtest_main
+)
+gtest_discover_tests(test_codegen_regression
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTIES
+        LABELS "e2e"
+        TIMEOUT 60
+)
+
 # ==============================================================================
 # Test data
 # ==============================================================================
@@ -300,6 +343,7 @@ add_custom_target(test_unit
             test_ast_modern
             test_type_registry test_type_inferrer
             test_semantic_candidates test_constant_folding
+            test_codegen_emitter
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running unit tests..."
 )
@@ -307,6 +351,7 @@ add_custom_target(test_unit
 add_custom_target(test_e2e
     COMMAND ${CMAKE_CTEST_COMMAND} -L e2e --output-on-failure
     DEPENDS test_e2e_compile test_syntax_validation
+            test_codegen_regression
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running end-to-end tests..."
 )
