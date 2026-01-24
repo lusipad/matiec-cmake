@@ -22,3 +22,6 @@
 - 构建：`cmake --build build-sanitize`
 - 测试：`ctest --test-dir build-sanitize --output-on-failure`
 - Windows/MSVC：该选项会被忽略并给出 warning（不影响默认构建）。
+
+## 性能回归
+- 参考 `docs/perf-checklist.md`，在涉及 codegen 或语义大改动时执行。

@@ -8,6 +8,11 @@
 1) 如需继续推进 P3 后续（Pass4+）：再单独规划更大范围的 token/string 生命周期改造
 
 ## 已完成（DONE）
+- `issues/p2-modernc-phase2-ast.csv`
+- `issues/p3-modernc-phase3-types.csv`
+- `issues/p4-modernc-phase4-semantics.csv`
+- `issues/p5-modernc-phase5-codegen.csv`
+- `issues/p6-modernc-phase6-integration.csv`
 - `issues/p1-build-vs-warning-cleanup-pass1.csv`：W1-W4
 - `issues/p1-error-handling-modernization-pass1.csv`：A1-A2
 - `issues/p1-error-handling-modernization-pass2.csv`：B1-B4

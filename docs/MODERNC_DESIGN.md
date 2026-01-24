@@ -768,44 +768,11 @@ private:
 '''
 ```
 
-### 4.5 迁移适配层
+### 4.5 迁移适配层（Phase 6 已移除）
 
-为保持向后兼容，提供适配层:
-
-```cpp
-// include/matiec/ast/legacy_compat.hpp
-
-#ifndef MATIEC_AST_LEGACY_COMPAT_HPP
-#define MATIEC_AST_LEGACY_COMPAT_HPP
-
-#include "symbol.hpp"
-
-// 类型别名，兼容旧代码
-using symbol_c = matiec::ast::Symbol;
-using token_c = matiec::ast::Token;
-using list_c = matiec::ast::List;
-
-// 旧式访问者包装器
-class visitor_c {
-public:
-    virtual ~visitor_c() = default;
-
-    // 旧式 void* 接口 -> 新接口转换
-    virtual void* visit(symbol_c* symbol) {
-        if (auto* modern = dynamic_cast<matiec::ast::Symbol*>(symbol)) {
-            auto result = modern->accept(*getModernVisitor());
-            return convertResult(result);
-        }
-        return nullptr;
-    }
-
-protected:
-    virtual matiec::ast::Visitor* getModernVisitor() = 0;
-    virtual void* convertResult(matiec::ast::VisitorResult& result) = 0;
-};
-
-#endif // MATIEC_AST_LEGACY_COMPAT_HPP
-```
+为平滑迁移曾引入 `legacy_compat.hpp` 适配层（桥接旧式 `void*` 访问者）。
+在 Phase 6 中该适配层已移除，代码库仅保留现代 Visitor 接口。
+如需兼容旧代码，请在下游工程中自行实现桥接。
 
 ---
 
