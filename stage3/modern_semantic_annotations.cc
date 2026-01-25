@@ -76,7 +76,7 @@ void assign_status_from_legacy(const_value_c& legacy,
             return;
         case TypeCategory::Real:
         case TypeCategory::LReal:
-            assign_from(legacy.m_real64, legacy.m_real64.get());
+            assign_from(legacy.m_real64, static_cast<double>(legacy.m_real64.get()));
             return;
         default:
             out.status = ConstValueStatus::Undefined;
